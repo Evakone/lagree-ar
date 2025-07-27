@@ -1,0 +1,16 @@
+{
+  "name": "lagree-ar",
+  "version": "1.0.0",
+  "description": "An AR mural application built with A-Frame and MindAR for marker-based augmented reality.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "mind-ar": "^1.2.5"
+  }
+}
