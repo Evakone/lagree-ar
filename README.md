@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # AR Mural Demo
 
 An AR mural application built with A-Frame and MindAR for marker-based augmented reality.
@@ -49,3 +50,7 @@ Access: https://localhost:8443
 
 ## Marker Image
 Make sure you have the marker image that corresponds to `targets.mind` for testing the AR functionality. 
+=======
+# lagree-ar
+for creating a web based AR mural experience.
+>>>>>>> origin/main
