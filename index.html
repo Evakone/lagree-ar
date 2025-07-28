@@ -5,11 +5,19 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>AR Mural Demo</title>
 
-  <!-- A-Frame 1.4.0 CDN -->
-  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <!-- A-Frame 1.2.0 CDN -->
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <!-- TensorFlow.js + WASM backend -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.16.0/dist/tf-backend-wasm.min.js"></script>
+  <script>
+    // Point TF to the local WASM binaries and force the WASM backend (needed for iOS)
+    tf.wasm.setWasmPaths('/js/');
+    tf.setBackend('wasm');
+  </script>
   <!-- MindAR scripts -->
-  <script src="/js/mindar-image-aframe.prod.js"></script>
-  <script src="assets/dpdb.json"></script>
+  <script src="./js/mindar-image-aframe.prod.js"></script>
+  <script src="./assets/dpdb.json"></script>
 </head>
 <body style="margin:0">
 
