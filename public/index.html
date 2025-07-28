@@ -7,24 +7,100 @@
 
   <!-- A-Frame 1.2.0 CDN -->
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-  <!-- TensorFlow.js + WASM backend -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.16.0/dist/tf-backend-wasm.min.js"></script>
+  
+  <!-- TensorFlow.js 3.21.0 + WASM backend (compatible with MindAR 1.2.x) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@3.21.0/dist/tf-backend-wasm.min.js"></script>
+  
   <script>
-    // Tell TensorFlow where the WASM binaries live and switch backend.
-    tf.wasm.setWasmPaths('./js/');
-    // Store the promise so we can wait before starting MindAR
-    window.tfReady = tf.setBackend('wasm').then(() => tf.ready());
+    // Initialize TensorFlow.js with WASM backend
+    async function initTensorFlow() {
+      try {
+        console.log('Initializing TensorFlow.js...');
+        
+        // Set WASM paths to our local js directory
+        tf.wasm.setWasmPaths('/js/');
+        console.log('WASM paths set to /js/');
+        
+        // Set backend to WASM
+        await tf.setBackend('wasm');
+        await tf.ready();
+        
+        console.log('TensorFlow.js backend:', tf.getBackend());
+        console.log('TensorFlow.js ready!');
+        
+        // Signal that TF is ready
+        window.tfReady = Promise.resolve();
+        window.dispatchEvent(new Event('tfready'));
+        
+      } catch (error) {
+        console.error('Failed to initialize TensorFlow.js:', error);
+        // Fallback to WebGL if WASM fails
+        try {
+          console.log('Falling back to WebGL backend...');
+          await tf.setBackend('webgl');
+          await tf.ready();
+          console.log('TensorFlow.js backend (fallback):', tf.getBackend());
+          window.tfReady = Promise.resolve();
+          window.dispatchEvent(new Event('tfready'));
+        } catch (fallbackError) {
+          console.error('Failed to initialize TensorFlow.js with fallback:', fallbackError);
+        }
+      }
+    }
+    
+    // Initialize TF.js when the page loads
+    window.addEventListener('load', initTensorFlow);
   </script>
-  <!-- MindAR scripts -->
-  <script src="/js/mindar-image-aframe.prod.js" defer></script>
+  
+  <!-- MindAR scripts - load after TF.js is ready -->
+  <script src="./js/mindar-image-aframe.prod.js" defer></script>
+  <script src="./assets/dpdb.json" defer></script>
+  
   <script>
-    // Wait until TensorFlow WASM backend is ready, then start MindAR
+    // Debug MindAR initialization
     window.addEventListener('DOMContentLoaded', async () => {
-      await window.tfReady;
-      const scene = document.querySelector('a-scene');
-      if (scene && scene.components && scene.components['mindar-image']) {
-        scene.components['mindar-image'].start();
+      console.log('DOM fully loaded');
+      
+      // Wait for TensorFlow to be ready
+      try {
+        await window.tfReady;
+        console.log('TensorFlow WASM backend ready');
+      } catch (error) {
+        console.error('TensorFlow not ready:', error);
+      }
+      
+      // Wait a bit more for A-Frame and MindAR to initialize
+      setTimeout(() => {
+        const scene = document.querySelector('a-scene');
+        console.log('A-Frame scene:', scene);
+        
+        if (scene && scene.components && scene.components['mindar-image']) {
+          console.log('MindAR component found, starting...');
+          scene.components['mindar-image'].start();
+        } else {
+          console.error('MindAR component not found or not initialized');
+          console.log('Available components:', scene ? Object.keys(scene.components || {}) : 'No scene');
+        }
+      }, 2000); // Give A-Frame time to initialize
+    });
+    
+    // Additional debugging for camera permissions
+    window.addEventListener('tfready', () => {
+      console.log('TensorFlow.js is ready, MindAR can now start');
+      
+      // Check camera permissions
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then(stream => {
+            console.log('Camera access granted');
+            stream.getTracks().forEach(track => track.stop()); // Stop the test stream
+          })
+          .catch(error => {
+            console.error('Camera access denied or not available:', error);
+          });
+      } else {
+        console.error('getUserMedia not supported');
       }
     });
   </script>
