@@ -19,13 +19,11 @@
   <!-- MindAR scripts -->
   <script src="/js/mindar-image-aframe.prod.js" defer></script>
   <script>
-    // Wait until TensorFlow WASM backend is ready, then start MindAR
+    // Wait until TensorFlow WASM backend is ready before letting MindAR initialise.
     window.addEventListener('DOMContentLoaded', async () => {
       await window.tfReady;
-      const scene = document.querySelector('a-scene');
-      if (scene && scene.components && scene.components['mindar-image']) {
-        scene.components['mindar-image'].start();
-      }
+      // Nothing else to call: mindar-image auto‑starts once tf backend is ready.
+      console.log('TensorFlow backend:', tf.getBackend());
     });
   </script>
 </head>
