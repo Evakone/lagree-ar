@@ -8,11 +8,11 @@
   <!-- A-Frame 1.2.0 CDN -->
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
   <!-- TensorFlow.js + WASM backend -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.16.0/dist/tf-backend-wasm.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@3.21.0/dist/tf-backend-wasm.min.js"></script>
   <script>
     // Tell TensorFlow where the WASM binaries live and switch backend.
-    tf.wasm.setWasmPaths('./js/');
+    tf.wasm.setWasmPaths('/js/');
     // Store the promise so we can wait before starting MindAR
     window.tfReady = tf.setBackend('wasm').then(() => tf.ready());
   </script>
