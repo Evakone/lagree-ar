@@ -1,0 +1,1 @@
+Couldn't find the requested file /dist/mindar-image-target.worker.js in mind-ar.
