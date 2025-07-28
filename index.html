@@ -9,13 +9,14 @@
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
   <!-- MindAR scripts -->
   <script src="/js/mindar-image-aframe.prod.js"></script>
+  <script src="assets/dpdb.json"></script>
 </head>
 <body style="margin:0">
 
 <a-scene mindar-image="imageTargetSrc: assets/targets.mind" 
          color-space="sRGB" 
          embedded 
-         renderer="colorManagement: true, physicallyCorrectLights: true"
+         renderer="antialias: true; precision: medium; colorManagement: true; physicallyCorrectLights: true"
          vr-mode-ui="enabled: false"
          device-orientation-permission-ui="enabled: false">
   <a-assets>
