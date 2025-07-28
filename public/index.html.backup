@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AR Mural Demo</title>
+
+  <!-- A-Frame 1.2.0 CDN -->
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  
+  <!-- TensorFlow.js 3.21.0 + WASM backend (compatible with MindAR 1.2.x) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@3.21.0/dist/tf-backend-wasm.min.js"></script>
+  
+  <script>
+    // Initialize TensorFlow.js with WASM backend
+    async function initTensorFlow() {
+      try {
+        console.log('Initializing TensorFlow.js...');
+        
+        // Set WASM paths to our local js directory
+        tf.wasm.setWasmPaths('/js/');
+        console.log('WASM paths set to /js/');
+        
+        // Set backend to WASM
+        await tf.setBackend('wasm');
+        await tf.ready();
+        
+        console.log('TensorFlow.js backend:', tf.getBackend());
+        console.log('TensorFlow.js ready!');
+        
+        // Signal that TF is ready
+        window.tfReady = Promise.resolve();
+        window.dispatchEvent(new Event('tfready'));
+        
+      } catch (error) {
+        console.error('Failed to initialize TensorFlow.js:', error);
+        // Fallback to WebGL if WASM fails
+        try {
+          console.log('Falling back to WebGL backend...');
+          await tf.setBackend('webgl');
+          await tf.ready();
+          console.log('TensorFlow.js backend (fallback):', tf.getBackend());
+          window.tfReady = Promise.resolve();
+          window.dispatchEvent(new Event('tfready'));
+        } catch (fallbackError) {
+          console.error('Failed to initialize TensorFlow.js with fallback:', fallbackError);
+        }
+      }
+    }
+    
+    // Initialize TF.js when the page loads
+    window.addEventListener('load', initTensorFlow);
+  </script>
+  
+  <!-- MindAR scripts - load after TF.js is ready -->
+  <script src="./js/mindar-image-aframe.prod.js" defer></script>
+  <script src="./assets/dpdb.json" defer></script>
+  
+  <script>
+    // Debug MindAR initialization
+    window.addEventListener('DOMContentLoaded', async () => {
+      console.log('DOM fully loaded');
+      
+      // Wait for TensorFlow to be ready
+      try {
+        await window.tfReady;
+        console.log('TensorFlow WASM backend ready');
+      } catch (error) {
+        console.error('TensorFlow not ready:', error);
+      }
+      
+      // Wait a bit more for A-Frame and MindAR to initialize
+      setTimeout(() => {
+        const scene = document.querySelector('a-scene');
+        console.log('A-Frame scene:', scene);
+        
+        if (scene && scene.components && scene.components['mindar-image']) {
+          console.log('MindAR component found, starting...');
+          scene.components['mindar-image'].start();
+        } else {
+          console.error('MindAR component not found or not initialized');
+          console.log('Available components:', scene ? Object.keys(scene.components || {}) : 'No scene');
+        }
+      }, 2000); // Give A-Frame time to initialize
+    });
+    
+    // Additional debugging for camera permissions
+    window.addEventListener('tfready', () => {
+      console.log('TensorFlow.js is ready, MindAR can now start');
+      
+      // Check camera permissions
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then(stream => {
+            console.log('Camera access granted');
+            stream.getTracks().forEach(track => track.stop()); // Stop the test stream
+          })
+          .catch(error => {
+            console.error('Camera access denied or not available:', error);
+          });
+      } else {
+        console.error('getUserMedia not supported');
+      }
+    });
+  </script>
+</head>
+<body style="margin:0">
+
+<a-scene mindar-image="imageTargetSrc: assets/targets.mind" 
+         color-space="sRGB" 
+         embedded 
+         renderer="antialias: true; precision: medium; colorManagement: true; physicallyCorrectLights: true"
+         vr-mode-ui="enabled: false"
+         device-orientation-permission-ui="enabled: false">
+  <a-assets>
+    <a-asset-item id="muralModel" src="assets/test_fun_shape_animated.glb"></a-asset-item>
+  </a-assets>
+
+  <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+  <a-entity mindar-image-target="targetIndex: 0">
+    <a-entity gltf-model="#muralModel" animation-mixer scale="0.4 0.4 0.4"></a-entity>
+  </a-entity>
+</a-scene>
+
+</body>
+</html>
