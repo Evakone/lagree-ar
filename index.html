@@ -11,13 +11,23 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.16.0/dist/tf-backend-wasm.min.js"></script>
   <script>
-    // Point TF to the local WASM binaries and force the WASM backend (needed for iOS)
-    tf.wasm.setWasmPaths('/js/');
-    tf.setBackend('wasm');
+    // Tell TensorFlow where the WASM binaries live and switch backend.
+    tf.wasm.setWasmPaths('./js/');
+    // Store the promise so we can wait before starting MindAR
+    window.tfReady = tf.setBackend('wasm').then(() => tf.ready());
   </script>
   <!-- MindAR scripts -->
-  <script src="./js/mindar-image-aframe.prod.js"></script>
-  <script src="./assets/dpdb.json"></script>
+  <script src="/js/mindar-image-aframe.prod.js" defer></script>
+  <script>
+    // Wait until TensorFlow WASM backend is ready, then start MindAR
+    window.addEventListener('DOMContentLoaded', async () => {
+      await window.tfReady;
+      const scene = document.querySelector('a-scene');
+      if (scene && scene.components && scene.components['mindar-image']) {
+        scene.components['mindar-image'].start();
+      }
+    });
+  </script>
 </head>
 <body style="margin:0">
 

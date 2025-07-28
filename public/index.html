@@ -5,26 +5,36 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>AR Mural Demo</title>
 
-  <!-- A-Frame 1.4.0 CDN -->
-  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <!-- A-Frame 1.2.0 CDN -->
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <!-- TensorFlow.js + WASM backend -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.16.0/dist/tf-backend-wasm.min.js"></script>
+  <script>
+    // Tell TensorFlow where the WASM binaries live and switch backend.
+    tf.wasm.setWasmPaths('./js/');
+    // Store the promise so we can wait before starting MindAR
+    window.tfReady = tf.setBackend('wasm').then(() => tf.ready());
+  </script>
   <!-- MindAR scripts -->
-  <script src="/js/mindar-image-aframe.prod.js"></script>
+  <script src="/js/mindar-image-aframe.prod.js" defer></script>
+  <script>
+    // Wait until TensorFlow WASM backend is ready, then start MindAR
+    window.addEventListener('DOMContentLoaded', async () => {
+      await window.tfReady;
+      const scene = document.querySelector('a-scene');
+      if (scene && scene.components && scene.components['mindar-image']) {
+        scene.components['mindar-image'].start();
+      }
+    });
+  </script>
 </head>
 <body style="margin:0">
-
-<script>
-if (typeof DeviceMotionEvent !== 'undefined' &&
-    typeof DeviceMotionEvent.requestPermission === 'function') {
-  document.addEventListener('click', () => {
-    DeviceMotionEvent.requestPermission().catch(()=>{});
-  }, { once: true });
-}
-</script>
 
 <a-scene mindar-image="imageTargetSrc: assets/targets.mind" 
          color-space="sRGB" 
          embedded 
-         renderer="colorManagement: true, physicallyCorrectLights: true"
+         renderer="antialias: true; precision: medium; colorManagement: true; physicallyCorrectLights: true"
          vr-mode-ui="enabled: false"
          device-orientation-permission-ui="enabled: false">
   <a-assets>

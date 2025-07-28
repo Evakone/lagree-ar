@@ -11,6 +11,17 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@tensorflow/tfjs": "^3.21.0",
+    "@tensorflow/tfjs-backend-wasm": "^3.21.0",
+    "aframe": "^0.1.3",
     "mind-ar": "^1.2.5"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Evakone/lagree-ar.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Evakone/lagree-ar/issues"
+  },
+  "homepage": "https://github.com/Evakone/lagree-ar#readme"
 }
