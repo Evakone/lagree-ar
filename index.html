@@ -12,12 +12,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@3.21.0/dist/tf-backend-wasm.min.js"></script>
   <script>
     // Tell TensorFlow where the WASM binaries live and switch backend.
-    tf.wasm.setWasmPaths('/js/');
+    tf.wasm.setWasmPaths('./js/');
     // Store the promise so we can wait before starting MindAR
     window.tfReady = tf.setBackend('wasm').then(() => tf.ready());
   </script>
   <!-- MindAR scripts -->
-  <script src="/js/mindar-image-aframe.prod.js" defer></script>
+  <script src="./js/mindar-image-aframe.prod.js" defer></script>
   <script>
     // Wait until TensorFlow WASM backend is ready before letting MindAR initialise.
     window.addEventListener('DOMContentLoaded', async () => {
@@ -34,7 +34,7 @@
          embedded 
          renderer="antialias: true; precision: medium; colorManagement: true; physicallyCorrectLights: true"
          vr-mode-ui="enabled: false"
-         device-orientation-permission-ui="enabled: false">
+         device-orientation-permission-ui="enabled: true">
   <a-assets>
     <a-asset-item id="muralModel" src="assets/test_fun_shape_animated.glb"></a-asset-item>
   </a-assets>

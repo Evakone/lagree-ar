@@ -19,8 +19,8 @@
         console.log('Initializing TensorFlow.js...');
         
         // Set WASM paths to our local js directory
-        tf.wasm.setWasmPaths('/js/');
-        console.log('WASM paths set to /js/');
+        tf.wasm.setWasmPaths('./js/');
+        console.log('WASM paths set to ./js/');
         
         // Set backend to WASM
         await tf.setBackend('wasm');
@@ -112,7 +112,7 @@
          embedded 
          renderer="antialias: true; precision: medium; colorManagement: true; physicallyCorrectLights: true"
          vr-mode-ui="enabled: false"
-         device-orientation-permission-ui="enabled: false">
+         device-orientation-permission-ui="enabled: true">
   <a-assets>
     <a-asset-item id="muralModel" src="assets/test_fun_shape_animated.glb"></a-asset-item>
   </a-assets>
