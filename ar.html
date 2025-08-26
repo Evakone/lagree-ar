@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LCS+E AR Experience</title>
+  
+  <!-- Brand font - Zen Kaku Gothic New -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Model Viewer -->
+  <script type="module" src="https://unpkg.com/@google/model-viewer@^3.0.0/dist/model-viewer.min.js"></script>
+  <script>
+    // Fallback for model-viewer if CDN fails
+    window.addEventListener('error', function(e) {
+      if (e.target.src && e.target.src.includes('model-viewer')) {
+        console.error('Model viewer script failed to load:', e);
+        // Try alternative CDN
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = 'https://cdn.jsdelivr.net/npm/@google/model-viewer@3.4.0/dist/model-viewer.min.js';
+        document.head.appendChild(script);
+      }
+    });
+    
+    // Check if model-viewer loaded successfully
+    setTimeout(() => {
+      if (!customElements.get('model-viewer')) {
+        console.error('Model viewer failed to load, trying alternative...');
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = 'https://cdn.jsdelivr.net/npm/@google/model-viewer@3.4.0/dist/model-viewer.min.js';
+        document.head.appendChild(script);
+      }
+    }, 5000);
+  </script>
+  
+  <!-- Brand CSS -->
+  <link rel="stylesheet" href="./brand.css">
+
+  <style>
+    html, body { 
+      height: 100%; 
+      margin: 0; 
+      font-family: 'Zen Kaku Gothic New', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    body { 
+      background: var(--color-black, #000000); 
+      color: var(--color-white, #ffffff); 
+      overflow: hidden;
+    }
+    
+    /* Loading States */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--color-black);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: opacity 0.5s ease;
+    }
+    
+    .loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    
+    .loading-logo {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 24px;
+      opacity: 0.8;
+    }
+    
+    .loading-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    
+    .loading-text {
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      opacity: 0.7;
+      text-align: center;
+    }
+    
+    .loading-progress {
+      width: 200px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 1px;
+      margin: 16px 0;
+      overflow: hidden;
+    }
+    
+    .loading-progress-fill {
+      height: 100%;
+      background: var(--color-white);
+      border-radius: 1px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Topbar */
+    .topbar { 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      right: 0; 
+      height: 56px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      padding: 0 16px; 
+      background: rgba(0, 0, 0, 0.85); 
+      backdrop-filter: blur(10px); 
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06); 
+      z-index: 100;
+    }
+    
+    .brand { 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+    }
+    
+    .brand-logo { 
+      width: 32px; 
+      height: 32px; 
+    }
+    
+    .brand-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    
+    .brand-name { 
+      font: 700 13px/1 'Zen Kaku Gothic New', sans-serif; 
+      letter-spacing: 0.5px; 
+      text-transform: uppercase;
+    }
+
+    /* Main AR Stage */
+    .stage { 
+      position: absolute; 
+      inset: 56px 0 80px 0; 
+      display: grid; 
+      place-items: center; 
+    }
+    
+    model-viewer {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+    }
+    
+    .ar-placeholder {
+      width: min(80vw, 400px); 
+      height: min(80vw, 400px);
+      border-radius: 20px; 
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+      display: grid; 
+      place-items: center; 
+      color: rgba(255, 255, 255, 0.4); 
+      text-align: center; 
+      padding: 24px;
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+    }
+
+    /* Controls HUD */
+    .hud { 
+      position: fixed; 
+      left: 0; 
+      right: 0; 
+      bottom: var(--hud-bottom, 0px); 
+      padding: 12px 16px; 
+      display: flex; 
+      justify-content: center; 
+      gap: 12px; 
+      background: rgba(0, 0, 0, 0.85); 
+      backdrop-filter: blur(10px); 
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    
+    .btn {
+      appearance: none; 
+      border: 1px solid rgba(255, 255, 255, 0.3); 
+      color: var(--color-white); 
+      background: transparent;
+      padding: 10px 16px; 
+      border-radius: 8px; 
+      font: 500 14px/1 'Zen Kaku Gothic New', sans-serif; 
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      font-size: 12px;
+    }
+    
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .btn:active {
+      transform: scale(0.98);
+    }
+    
+    .btn.primary { 
+      background: var(--color-white); 
+      color: var(--color-black); 
+      border-color: var(--color-white); 
+      font-weight: 700;
+    }
+    
+    .btn.primary:hover {
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Info Panel */
+    .panel {
+      position: fixed; 
+      right: 12px; 
+      bottom: 100px; 
+      width: min(360px, 90vw);
+      background: rgba(14, 14, 14, 0.95); 
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      border-radius: 12px; 
+      padding: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(20px);
+      transform: translateY(100%);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    
+    .panel.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .panel h3 { 
+      margin: 0 0 8px; 
+      font: 700 14px/1.2 'Zen Kaku Gothic New', sans-serif; 
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    
+    .panel p { 
+      margin: 0; 
+      font: 400 13px/1.5 'Zen Kaku Gothic New', sans-serif; 
+      color: rgba(255, 255, 255, 0.8);
+      letter-spacing: 0.2px;
+    }
+
+    /* Status Messages */
+    .status-message {
+      position: fixed;
+      bottom: 120px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(14, 14, 14, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--color-white);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font: 400 13px/1.4 'Zen Kaku Gothic New', sans-serif;
+      letter-spacing: 0.2px;
+      text-align: center;
+      max-width: 320px;
+      backdrop-filter: blur(20px);
+      display: none;
+    }
+
+    .status-message.show {
+      display: block;
+      animation: fadeInUp 0.3s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-logo">
+      <img src="./public/assets/skwiggles_colour.png" alt="LCS+E Logo">
+    </div>
+    <div class="loading-progress">
+      <div class="loading-progress-fill" id="loadingProgress"></div>
+    </div>
+    <div class="loading-text">Loading AR Experience...</div>
+  </div>
+
+  <!-- Top Navigation -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo">
+        <img src="./public/assets/skwiggles_colour.png" alt="LCS+E">
+      </div>
+      <div class="brand-name">Lagree Core Strength + Espresso</div>
+    </div>
+    <button class="btn" id="btnInfo" aria-controls="infoPanel" aria-expanded="false">Info</button>
+  </header>
+
+  <!-- AR Stage -->
+  <main class="stage" role="main" aria-label="LCS+E AR Stage">
+    <model-viewer 
+      id="arModel"
+      src="./public/assets/test_fun_shape_animated.glb"
+      alt="LCS+E Street Sign - Interactive 3D Model"
+      ar
+      ar-modes="webxr scene-viewer quick-look"
+      ar-scale="auto"
+      ar-placement="floor"
+      auto-rotate
+      camera-controls
+      loading="eager"
+      reveal="interaction"
+      environment-image="neutral"
+      shadow-intensity="0.3"
+      shadow-softness="0.5"
+      exposure="1.2"
+      camera-orbit="0deg 75deg 105%"
+      min-camera-orbit="auto auto 50%"
+      max-camera-orbit="auto auto 200%"
+      style="display: none;">
+    </model-viewer>
+
+    <div class="ar-placeholder" id="arPlaceholder">
+      <div>
+        <div style="font-weight: 700; margin-bottom: 12px; font-size: 16px;">AR Experience Loading</div>
+        <div>Move with Purpose.<br>Maximize Strength and Balance.</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Info Panel -->
+  <aside id="infoPanel" class="panel" role="dialog" aria-label="About LCS+E">
+    <h3>About LCS+E</h3>
+    <p>Move with purpose. Maximize strength and balance. Coffee fuels the ritual.</p>
+    <p style="margin-top: 12px; opacity: 0.6;">Experience our signature blend of Lagree fitness method and artisanal espresso culture.</p>
+  </aside>
+
+  <!-- Status Messages -->
+  <div class="status-message" id="statusMessage"></div>
+
+  <!-- Control HUD -->
+  <nav class="hud" aria-label="AR Controls">
+    <button class="btn primary" id="btnAR" style="display: none;">Enter AR</button>
+    <button class="btn" id="btnReset">Reset View</button>
+    <button class="btn" id="btnShare" style="display: none;">Share</button>
+  </nav>
+
+  <script>
+    const App = {
+      isLoaded: false,
+      isARActive: false,
+      modelViewer: null,
+      
+      init() {
+        console.log('Initializing LCS+E AR App...');
+        
+        this.modelViewer = document.getElementById('arModel');
+        if (!this.modelViewer) {
+          console.error('Model viewer element not found');
+          this.showStatus('Error: AR model viewer not found');
+          return;
+        }
+        
+        console.log('Model viewer found:', this.modelViewer);
+        console.log('Model viewer tag name:', this.modelViewer.tagName);
+        
+        // Wait for model-viewer to be fully initialized
+        if (this.modelViewer.tagName.toLowerCase() === 'model-viewer') {
+          console.log('Model viewer element is ready');
+          this.setupEventListeners();
+          this.loadModel();
+          this.loadTheme();
+        } else {
+          console.error('Model viewer element is not properly initialized');
+          this.showStatus('Error: AR model viewer not ready');
+        }
+      },
+
+      setupEventListeners() {
+        console.log('Setting up event listeners...');
+        
+        const btnInfo = document.getElementById('btnInfo');
+        const btnAR = document.getElementById('btnAR');
+        const btnReset = document.getElementById('btnReset');
+        const btnShare = document.getElementById('btnShare');
+        
+        if (btnInfo) btnInfo.addEventListener('click', this.toggleInfo.bind(this));
+        if (btnAR) btnAR.addEventListener('click', this.enterAR.bind(this));
+        if (btnReset) btnReset.addEventListener('click', this.resetView.bind(this));
+        if (btnShare) btnShare.addEventListener('click', this.share.bind(this));
+        
+        // Model viewer events
+        if (this.modelViewer) {
+          console.log('Adding model viewer event listeners...');
+          this.modelViewer.addEventListener('load', this.onModelLoaded.bind(this));
+          this.modelViewer.addEventListener('error', this.onModelError.bind(this));
+          this.modelViewer.addEventListener('ar-status', this.onARStatus.bind(this));
+          this.modelViewer.addEventListener('progress', this.onLoadProgress.bind(this));
+          
+          // Additional debugging events
+          this.modelViewer.addEventListener('model-visibility', (e) => {
+            console.log('Model visibility changed:', e.detail);
+          });
+          
+          this.modelViewer.addEventListener('camera-change', (e) => {
+            console.log('Camera changed:', e.detail);
+          });
+        } else {
+          console.error('Model viewer not available for event listeners');
+        }
+      },
+
+      loadModel() {
+        console.log('Starting model load...');
+        this.updateLoadingProgress(10);
+        
+        // Check if model-viewer is properly initialized
+        if (!this.modelViewer) {
+          console.error('Model viewer not found');
+          this.showStatus('Error: Model viewer not initialized');
+          return;
+        }
+        
+        // Check if model-viewer is ready
+        if (!this.modelViewer.modelStatus) {
+          console.log('Model viewer not ready yet, waiting...');
+          setTimeout(() => this.loadModel(), 500);
+          return;
+        }
+        
+        console.log('Model viewer status:', this.modelViewer.modelStatus);
+        
+        // Add timeout for model loading
+        const loadTimeout = setTimeout(() => {
+          if (!this.isLoaded) {
+            console.warn('Model loading timeout, checking status...');
+            this.checkModelStatus();
+          }
+        }, 15000); // 15 second timeout
+        
+        setTimeout(() => this.updateLoadingProgress(30), 500);
+      },
+
+      checkModelStatus() {
+        if (this.modelViewer.modelStatus === 'failed') {
+          console.error('Model failed to load');
+          this.onModelError(new Error('Model loading timeout'));
+        } else if (this.modelViewer.modelStatus === 'loading') {
+          console.log('Model still loading...');
+          setTimeout(() => this.checkModelStatus(), 2000);
+        }
+      },
+
+      onLoadProgress(event) {
+        // Handle different progress event formats
+        let progress = 30; // Default progress
+        if (event.detail && typeof event.detail.totalProgress === 'number') {
+          progress = event.detail.totalProgress * 70 + 30;
+        } else if (event.detail && typeof event.detail.progress === 'number') {
+          progress = event.detail.progress * 70 + 30;
+        }
+        this.updateLoadingProgress(progress);
+      },
+
+      onModelLoaded() {
+        console.log('Model loaded successfully');
+        console.log('Model viewer state:', {
+          modelStatus: this.modelViewer.modelStatus,
+          src: this.modelViewer.src,
+          ready: this.modelViewer.ready,
+          loading: this.modelViewer.loading
+        });
+        
+        this.updateLoadingProgress(100);
+        
+        setTimeout(() => {
+          document.getElementById('loadingOverlay').classList.add('hidden');
+          document.getElementById('arPlaceholder').style.display = 'none';
+          this.modelViewer.style.display = 'block';
+          document.getElementById('btnAR').style.display = 'block';
+          document.getElementById('btnShare').style.display = 'block';
+          this.isLoaded = true;
+          
+          console.log('Model viewer should now be visible');
+          this.showStatus('3D model loaded. Ready for AR experience.');
+        }, 500);
+      },
+
+      onModelError(error) {
+        console.error('Model loading error:', error);
+        this.showStatus('Failed to load 3D model. Please refresh to try again.');
+        document.getElementById('loadingOverlay').classList.add('hidden');
+      },
+
+      onARStatus(event) {
+        const status = event.detail.status;
+        console.log('AR Status:', status);
+        
+        // Handle different AR statuses
+        switch (status) {
+          case 'session-started':
+            console.log('AR session started');
+            this.isARActive = true;
+            this.showStatus('AR session active');
+            break;
+          case 'session-ended':
+            console.log('AR session ended');
+            this.isARActive = false;
+            this.showStatus('AR session ended');
+            break;
+          case 'failed':
+            console.error('AR session failed');
+            this.showStatus('AR session failed. Please try again.');
+            break;
+          default:
+            console.log('AR status:', status);
+        }
+      },
+
+      updateLoadingProgress(percent) {
+        const progressBar = document.getElementById('loadingProgress');
+        if (progressBar) {
+          const clampedPercent = Math.min(percent, 100);
+          progressBar.style.width = `${clampedPercent}%`;
+          console.log(`Loading progress: ${clampedPercent}%`);
+        } else {
+          console.error('Loading progress bar not found');
+        }
+      },
+
+      toggleInfo() {
+        const panel = document.getElementById('infoPanel');
+        const btn = document.getElementById('btnInfo');
+        const isOpen = panel.classList.toggle('show');
+        btn.setAttribute('aria-expanded', String(isOpen));
+      },
+
+      enterAR() {
+        if (!this.isLoaded) return;
+        
+        console.log('Attempting to enter AR...');
+        
+        // Try multiple methods to activate AR
+        try {
+          // Method 1: Direct AR activation
+          if (this.modelViewer.activateAR) {
+            this.modelViewer.activateAR();
+            console.log('AR activated via activateAR method');
+            return;
+          }
+          
+          // Method 2: Find and click AR button in shadow DOM
+          const arButton = this.modelViewer.querySelector('#default-ar-button') || 
+                          this.modelViewer.shadowRoot?.querySelector('#default-ar-button') ||
+                          this.modelViewer.shadowRoot?.querySelector('[data-ar-button]') ||
+                          this.modelViewer.shadowRoot?.querySelector('button[ar]');
+          
+          if (arButton) {
+            console.log('AR button found, clicking...');
+            arButton.click();
+          } else {
+            console.warn('AR button not found in shadow DOM');
+            this.showStatus('AR button not found. Please use browser AR features.');
+          }
+        } catch (error) {
+          console.error('Error entering AR:', error);
+          this.showStatus('AR activation failed. Please try again.');
+        }
+      },
+
+      resetView() {
+        if (!this.isLoaded) return;
+        this.modelViewer.resetTurntableRotation();
+        this.modelViewer.jumpCameraToGoal();
+        this.showStatus('View reset');
+      },
+
+      async share() {
+        const shareData = {
+          title: 'LCS+E AR Experience',
+          text: 'Check out this AR experience from Lagree Core Strength + Espresso',
+          url: window.location.href
+        };
+
+        try {
+          if (navigator.share && navigator.canShare(shareData)) {
+            await navigator.share(shareData);
+          } else {
+            await navigator.clipboard.writeText(window.location.href);
+            this.showStatus('Link copied to clipboard');
+          }
+        } catch (error) {
+          console.log('Share failed:', error);
+        }
+      },
+
+      showStatus(message) {
+        const statusEl = document.getElementById('statusMessage');
+        statusEl.textContent = message;
+        statusEl.classList.add('show');
+        
+        setTimeout(() => {
+          statusEl.classList.remove('show');
+        }, 3000);
+      },
+
+      loadTheme() {
+        const params = new URLSearchParams(window.location.search);
+        const themeUrl = params.get('theme');
+        
+        if (themeUrl) {
+          fetch(themeUrl)
+            .then(r => r.json())
+            .then(theme => {
+              console.log('Theme loaded:', theme);
+              if (theme.layout?.safe_zones?.hud_bottom_px) {
+                document.documentElement.style.setProperty(
+                  '--hud-bottom', 
+                  theme.layout.safe_zones.hud_bottom_px + 'px'
+                );
+              }
+            })
+            .catch(err => console.log('Theme loading failed:', err));
+        }
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('DOM Content Loaded');
+      
+      // Wait for model-viewer to be available
+      const checkModelViewer = () => {
+        if (customElements.get('model-viewer')) {
+          console.log('Model viewer custom element is ready');
+          
+          // Wait a bit more for the element to be fully initialized
+          setTimeout(() => {
+            console.log('Starting app initialization...');
+            App.init();
+          }, 100);
+        } else {
+          console.log('Waiting for model viewer to load...');
+          setTimeout(checkModelViewer, 100);
+        }
+      };
+      
+      // Also check for script loading errors
+      window.addEventListener('error', (e) => {
+        if (e.target.src && e.target.src.includes('model-viewer')) {
+          console.error('Model viewer script error:', e);
+        }
+      });
+      
+      checkModelViewer();
+    });
+
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (event) {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+  </script>
+</body>
+</html>
