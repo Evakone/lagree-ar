@@ -1,50 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AR Mural Demo</title>
-
-  <!-- A-Frame 1.2.0 CDN -->
-  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-  <!-- TensorFlow.js + WASM backend -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@3.21.0/dist/tf-backend-wasm.min.js"></script>
-  <script>
-    // Tell TensorFlow where the WASM binaries live and switch backend.
-    tf.wasm.setWasmPaths('/js/');
-    // Store the promise so we can wait before starting MindAR
-    window.tfReady = tf.setBackend('wasm').then(() => tf.ready());
-  </script>
-  <!-- MindAR scripts -->
-  <script src="/js/mindar-image-aframe.prod.js" defer></script>
-  <script>
-    // Wait until TensorFlow WASM backend is ready before letting MindAR initialise.
-    window.addEventListener('DOMContentLoaded', async () => {
-      await window.tfReady;
-      // Nothing else to call: mindar-image auto‑starts once tf backend is ready.
-      console.log('TensorFlow backend:', tf.getBackend());
-    });
-  </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LCS+E AR Experience</title>
+  <meta http-equiv="refresh" content="0; url=./ar.html">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #000;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+    .redirect {
+      max-width: 400px;
+      padding: 2rem;
+    }
+    .logo {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 2rem;
+      background: #333;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+    a {
+      color: #fff;
+      text-decoration: underline;
+    }
+  </style>
 </head>
-<body style="margin:0">
-
-<a-scene mindar-image="imageTargetSrc: assets/targets.mind" 
-         color-space="sRGB" 
-         embedded 
-         renderer="antialias: true; precision: medium; colorManagement: true; physicallyCorrectLights: true"
-         vr-mode-ui="enabled: false"
-         device-orientation-permission-ui="enabled: false">
-  <a-assets>
-    <a-asset-item id="muralModel" src="assets/test_fun_shape_animated.glb"></a-asset-item>
-  </a-assets>
-
-  <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
-  <a-entity mindar-image-target="targetIndex: 0">
-    <a-entity gltf-model="#muralModel" animation-mixer scale="0.4 0.4 0.4"></a-entity>
-  </a-entity>
-</a-scene>
-
+<body>
+  <div class="redirect">
+    <div class="logo">LCS+E</div>
+    <h1>Lagree Core Strength + Espresso</h1>
+    <p>Redirecting to AR Experience...</p>
+    <p><a href="./ar.html">Click here if not redirected automatically</a></p>
+  </div>
 </body>
 </html>

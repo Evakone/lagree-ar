@@ -1,6 +1,46 @@
 {
   "version": 2,
   "name": "ar-street-sign-lcse",
+  "builds": [
+    {
+      "src": "ar.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "brand.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "js/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/ar.html"
+    },
+    {
+      "src": "/ar",
+      "dest": "/ar.html"
+    },
+    {
+      "src": "/(.*).glb",
+      "dest": "/public/assets/$1.glb"
+    },
+    {
+      "src": "/(.*).png",
+      "dest": "/public/assets/$1.png"
+    },
+    {
+      "src": "/(.*).svg",
+      "dest": "/public/assets/$1.svg"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*).glb",
