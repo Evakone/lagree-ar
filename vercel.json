@@ -1,25 +1,23 @@
 {
-  "version": 2,
-  "name": "lagree-ar",
-  "rewrites": [
-    { "source": "/", "destination": "/index.html" },
-    { "source": "/ar", "destination": "/index.html" },
-    { "source": "/ar.html", "destination": "/index.html" }
-  ],
-  "headers": [
-    {
-      "source": "/assets/(.*)\\.glb",
-      "headers": [
-        { "key": "Content-Type", "value": "model/gltf-binary" },
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
-    },
-    {
-      "source": "/js/(.*)\\.wasm",
-      "headers": [
-        { "key": "Content-Type", "value": "application/wasm" },
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
-    }
-  ]
-}
+    "version": 2,
+    "name": "lagree-ar",
+    "rewrites": [
+      { "source": "/", "destination": "/index.html" }
+    ],
+    "headers": [
+      {
+        "source": "/assets/(.*)\\.glb",
+        "headers": [
+          { "key": "Content-Type", "value": "model/gltf-binary" },
+          { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        ]
+      },
+      {
+        "source": "/js/(.*)\\.wasm",
+        "headers": [
+          { "key": "Content-Type", "value": "application/wasm" },
+          { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        ]
+      }
+    ]
+  }

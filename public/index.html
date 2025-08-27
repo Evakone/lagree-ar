@@ -1,13 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>LCS+E AR Experience</title>
-  <meta http-equiv="refresh" content="0; url=../ar.html">
+
+  <!-- Brand font - Zen Kaku Gothic New -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Model Viewer -->
+  <script type="module" src="https://unpkg.com/@google/model-viewer@^3.0.0/dist/model-viewer.min.js"></script>
+
+  <style>
+    :root {
+      --color-black: #000;
+      --color-white: #fff;
+      --spacing-sm: .5rem;
+      --spacing-md: .75rem;
+      --spacing-lg: 1rem;
+      --radius-md: 10px;
+      --z-fixed: 10;
+      --font: 'Zen Kaku Gothic New', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    html, body { height: 100%; margin: 0; font-family: var(--font); background: var(--color-black); color: var(--color-white); }
+
+    .app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+
+    /* Header */
+    .header { position: fixed; top: 0; left: 0; right: 0; z-index: var(--z-fixed); display: flex; align-items: center; justify-content: center; gap: var(--spacing-lg); padding: var(--spacing-md) var(--spacing-lg); background: rgba(0,0,0,.7); backdrop-filter: blur(8px); }
+    .header .left, .header .right { position: absolute; top: 50%; transform: translateY(-50%); }
+    .header .left { left: var(--spacing-lg); }
+    .header .right { right: var(--spacing-lg); }
+    .brand-dot { width: 40px; height: 40px; border-radius: 50%; background: #000; display: grid; place-items: center; }
+    .brand-dot img { width: 26px; height: 26px; object-fit: contain; filter: invert(1); }
+    .title { margin: 0; font-weight: 600; font-size: 1rem; text-align: center; }
+
+    /* Model Viewer fills screen under header */
+    model-viewer { width: 100%; height: 100%; display: block; background: var(--color-black); --poster-color: transparent; }
+
+    /* Floating size controls */
+    .panel { position: absolute; left: 50%; bottom: 6rem; transform: translateX(-50%); background: rgba(0,0,0,.75); border: 1px solid rgba(255,255,255,.2); backdrop-filter: blur(8px); padding: var(--spacing-lg); border-radius: var(--radius-md); text-align: center; z-index: var(--z-fixed); min-width: 280px; }
+    .panel h3 { margin: 0 0 .5rem; font-size: .95rem; font-weight: 600; }
+    .panel label { display:block; font-size: .85rem; opacity: .85; margin-bottom: .25rem; }
+    input[type="range"] { width: 100%; height: 6px; background: rgba(255,255,255,.2); border-radius: 999px; -webkit-appearance: none; appearance: none; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; }
+    .buttons { display:flex; gap: .5rem; justify-content:center; margin-top: .5rem; }
+    .btn { background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.25); padding: .45rem .7rem; border-radius: 8px; font-size: .8rem; cursor: pointer; }
+    .btn.active { background:#fff; color:#000; }
+
+    /* AR button (slotted) visual boost */
+    .ar-cta { position: absolute; right: var(--spacing-lg); bottom: var(--spacing-lg); z-index: var(--z-fixed); }
+    .ar-cta .btn { background:#fff; color:#000; border:none; box-shadow: 0 8px 20px rgba(0,0,0,.35); }
+
+    /* Loader */
+    .loader { position:absolute; inset:0; display:grid; place-items:center; background: rgba(0,0,0,.8); z-index: var(--z-fixed); }
+    .loader-inner { text-align:center; padding: 1rem 1.25rem; border: 1px solid rgba(255,255,255,.2); border-radius: 12px; background: rgba(0,0,0,.6); }
+    .loader-inner img { width: 64px; height:64px; display:block; margin: 0 auto .75rem; filter: invert(1); }
+  </style>
 </head>
 <body>
-  <p>Redirecting to AR Experience...</p>
-  <p><a href="../ar.html">Click here if not redirected automatically</a></p>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="left">
+        <div class="brand-dot"><img src="/assets/lcse-logo-AR-loader.png" alt="LCS+E"></div>
+      </div>
+      <h1 class="title">Street Sign AR Experience</h1>
+      <div class="right"></div>
+    </header>
+
+    <!-- Loader -->
+    <div class="loader" id="loader">
+      <div class="loader-inner">
+        <img src="/assets/lcse-logo-AR-loader.png" alt="Loading" />
+        <div>Loading 3D model…</div>
+      </div>
+    </div>
+
+    <!-- Model Viewer (single source of truth) -->
+    <model-viewer
+      id="mv"
+      src="/assets/cleangreenmid-scaled.glb"
+      alt="LCS+E Street Sign - Interactive 3D Model"
+      ar
+      ar-modes="webxr scene-viewer quick-look"
+      ar-scale="auto"
+      camera-controls
+      auto-rotate
+      environment-image="neutral"
+      poster="/assets/lcse-logo-AR-loader.png"
+      exposure="1.0"
+      camera-orbit="0deg 75deg 100%"
+      camera-target="auto"
+      xr-environment>
+      <!-- Slotted AR button so browsers allow AR -->
+      <div slot="ar-button" class="ar-cta"><button class="btn" id="arBtn">👁️ View in AR</button></div>
+    </model-viewer>
+
+    <!-- Size controls -->
+    <div class="panel" id="panel" style="display:none;">
+      <h3>Adjust Model Size</h3>
+      <label>Scale: <span id="scaleVal">1.0x</span></label>
+      <input type="range" id="scale" min="0.1" max="3.0" step="0.1" value="1.0" />
+      <div class="buttons">
+        <button class="btn" data-scale="0.5">Small</button>
+        <button class="btn active" data-scale="1.0">Normal</button>
+        <button class="btn" data-scale="2.0">Large</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const mv = document.getElementById('mv');
+    const loader = document.getElementById('loader');
+    const panel = document.getElementById('panel');
+    const scale = document.getElementById('scale');
+    const scaleVal = document.getElementById('scaleVal');
+    const buttons = [...document.querySelectorAll('.buttons .btn')];
+
+    // Debug: check GLB is reachable & correct MIME
+    fetch('/assets/cleangreenmid-scaled.glb', { method: 'HEAD' })
+      .then(r => console.log('[GLB]', r.status, r.headers.get('content-type')))
+      .catch(e => console.error('[GLB] HEAD failed', e));
+
+    mv.addEventListener('load', () => {
+      loader.style.display = 'none';
+      panel.style.display = 'block';
+      if (mv.dismissPoster) mv.dismissPoster();
+      console.log('✅ model-viewer loaded');
+    });
+
+    mv.addEventListener('error', (e) => {
+      console.error('❌ model-viewer error', e);
+      loader.querySelector('div').textContent = 'Error loading model';
+      setTimeout(() => loader.style.display = 'none', 1500);
+    });
+
+    // Scaling controls
+    const applyScale = (s) => {
+      mv.scale = `${s} ${s} ${s}`;
+      scaleVal.textContent = `${Number(s).toFixed(1)}x`;
+      buttons.forEach(b => b.classList.toggle('active', b.dataset.scale === String(s)));
+    };
+
+    scale.addEventListener('input', (e) => applyScale(e.target.value));
+    buttons.forEach(b => b.addEventListener('click', () => { scale.value = b.dataset.scale; applyScale(b.dataset.scale); }));
+  </script>
 </body>
 </html>
