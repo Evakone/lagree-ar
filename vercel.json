@@ -1,72 +1,42 @@
 {
   "version": 2,
-  "name": "ar-street-sign-lcse",
-  "builds": [
-    {
-      "src": "ar.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "brand.css",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "public/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "js/**",
-      "use": "@vercel/static"
-    }
-  ],
+  "name": "lagree-ar",
   "rewrites": [
-    {
-      "source": "/",
-      "destination": "/ar.html"
-    },
-    {
-      "source": "/ar",
-      "destination": "/ar.html"
-    }
+    { "source": "/", "destination": "/ar.html" },
+    { "source": "/ar", "destination": "/ar.html" }
   ],
   "headers": [
     {
-      "source": "/(.*).glb",
+      "source": "/assets/(.*)\\.glb",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        },
-        {
-          "key": "Content-Type",
-          "value": "model/gltf-binary"
-        }
+        { "key": "Content-Type", "value": "model/gltf-binary" },
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     },
     {
-      "source": "/(.*).png",
+      "source": "/js/(.*)\\.wasm",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000"
-        },
-        {
-          "key": "Content-Type",
-          "value": "image/png"
-        }
+        { "key": "Content-Type", "value": "application/wasm" },
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     },
     {
-      "source": "/(.*).svg",
+      "source": "/(.*)\\.png",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000"
-        },
-        {
-          "key": "Content-Type",
-          "value": "image/svg+xml"
-        }
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.jpg",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.svg",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" },
+        { "key": "Content-Type", "value": "image/svg+xml" }
       ]
     }
   ]
