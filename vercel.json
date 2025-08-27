@@ -2,8 +2,9 @@
   "version": 2,
   "name": "lagree-ar",
   "rewrites": [
-    { "source": "/",   "destination": "/ar.html" },
-    { "source": "/ar", "destination": "/ar.html" }
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/ar", "destination": "/index.html" },
+    { "source": "/ar.html", "destination": "/index.html" }
   ],
   "headers": [
     {
