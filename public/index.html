@@ -88,7 +88,7 @@
     <!-- Model Viewer (single source of truth) -->
     <model-viewer
       id="mv"
-      src="/assets/models/LCSE-AR-Back-Wall-Clean-Parented.glb"
+      src="/assets/models/LCSE-AR-Back-Wall-Clean-Parented-pipeline.glb"
       alt="LCS+E Street Sign - Interactive 3D Model"
       ar
       ar-modes="webxr scene-viewer quick-look"
@@ -155,7 +155,17 @@
         
         this.mv.addEventListener('error', (e) => {
           console.error('❌ Model error:', e);
+          console.error('❌ Error details:', e.detail);
           document.getElementById('loadingText').textContent = 'Error loading model';
+        });
+
+        // Add progress monitoring
+        this.mv.addEventListener('progress', (e) => {
+          const progress = e.detail.totalProgress;
+          console.log(`📥 Loading progress: ${Math.round(progress * 100)}%`);
+          if (progress < 1) {
+            document.getElementById('loadingText').textContent = `Loading 3D models... ${Math.round(progress * 100)}%`;
+          }
         });
         
         this.mv.addEventListener('play', () => {
@@ -229,11 +239,22 @@
         }
 
         try {
+          // Ensure model is fully loaded before setting animation
+          if (!this.mv.model) {
+            console.warn('⚠️ Model not fully loaded, waiting...');
+            setTimeout(() => this.startPrimaryAnimation({ resetTime, force }), 500);
+            return;
+          }
+
           // Set animation properties
           this.mv.setAttribute('animation-name', this.primaryAnimation);
           this.mv.setAttribute('animation-loop', '');
           this.mv.setAttribute('autoplay', '');
-          this.mv.animationName = this.primaryAnimation;
+          
+          // Safely set animation name
+          if (this.mv.animationName !== undefined) {
+            this.mv.animationName = this.primaryAnimation;
+          }
 
           if (resetTime) {
             this.mv.currentTime = 0;
@@ -328,17 +349,45 @@
           console.log('📊 Model Information:');
           console.log('- Available animations:', animations.length);
           console.log('- Animations:', animations);
-          console.log('- Model size: ~20MB (large file)');
+          
+          // Get actual model size from the loaded model
+          const modelSize = this.getModelSize();
+          console.log(`- Model size: ~${modelSize}MB (pipeline optimized)`);
           console.log('- Device:', navigator.userAgent);
           console.log('- Memory:', navigator.deviceMemory ? `${navigator.deviceMemory}GB` : 'Unknown');
           
           // Check for performance issues
           if (this.isIOS()) {
-            console.log('⚠️ iOS detected - large models may cause performance issues');
-            console.log('💡 Consider optimizing model for mobile devices');
+            if (modelSize < 10) {
+              console.log('✅ iOS detected - model optimized for mobile performance');
+              console.log('💡 Model size reduced significantly for better mobile experience');
+            } else {
+              console.log('⚠️ iOS detected - model may still cause performance issues');
+              console.log('💡 Consider further optimization for mobile devices');
+            }
           }
         } catch (error) {
           console.error('Error logging model info:', error);
+        }
+      }
+
+      getModelSize() {
+        try {
+          // Try to get the actual file size from the model viewer
+          const model = this.mv.model;
+          if (model && model.userData && model.userData.fileSize) {
+            return Math.round(model.userData.fileSize / (1024 * 1024));
+          }
+          
+          // Fallback: estimate based on current model
+          const currentSrc = this.mv.src;
+          if (currentSrc.includes('pipeline')) return '7.7';
+          if (currentSrc.includes('conservative')) return '3.5';
+          if (currentSrc.includes('optimized')) return '1.6';
+          return '20';
+        } catch (error) {
+          console.warn('Could not determine model size:', error);
+          return 'Unknown';
         }
       }
 
