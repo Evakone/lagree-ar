@@ -83,7 +83,7 @@
     <!-- Model Viewer (single source of truth) -->
     <model-viewer
       id="mv"
-      src="/assets/models/LCSE-AR-back-animated.glb"
+      src="/assets/models/LCSE-AR-Back-Wall-Clean-Parented.glb"
       alt="LCS+E Street Sign - Interactive 3D Model"
       ar
       ar-modes="webxr scene-viewer quick-look"
@@ -95,7 +95,6 @@
       exposure="1.0"
       camera-orbit="0deg 75deg 100%"
       camera-target="auto"
-      orientation="0deg 180deg 180deg"
       xr-environment>
       <!-- Slotted AR button so browsers allow AR -->
       <div slot="ar-button" class="ar-cta"><button class="btn" id="arBtn">👁️ View in AR</button></div>
@@ -169,7 +168,6 @@
 
         this.primaryAnimation = animations[0];
         this.mv.animationName = this.primaryAnimation;
-        this.mv.orientation = '0deg 180deg 180deg';
         this.mv.pause();
         this.mv.currentTime = 0;
       }
