@@ -45,14 +45,9 @@
     .btn:active { transform: scale(0.97); }
 
     /* AR button (slotted) visual boost */
-    .ar-cta { position: absolute; right: var(--spacing-lg); bottom: var(--spacing-lg); z-index: var(--z-fixed); }
+    .ar-cta { position: absolute; right: var(--spacing-lg); bottom: calc(3.5rem + var(--spacing-lg) + env(safe-area-inset-bottom, 0)); z-index: var(--z-fixed); }
     .ar-cta .btn { background:#fff; color:#000; border:none; box-shadow: 0 8px 20px rgba(0,0,0,.35); }
 
-    /* Tap to play button */
-    .play-cta { position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%); z-index: calc(var(--z-fixed) + 1); display: flex; justify-content: center; opacity: 0; transition: opacity 0.4s ease; pointer-events: none; }
-    .play-cta.visible { opacity: 1; pointer-events: auto; }
-    .play-button { background: rgba(0,0,0,0.75); color: #fff; border: 1px solid rgba(255,255,255,0.35); border-radius: 999px; padding: 0.65rem 1.5rem; font-size: 0.9rem; letter-spacing: 0.03em; text-transform: uppercase; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px); }
-    .play-button:active { transform: scale(0.97); }
 
     /* Loader */
     .loader { position:absolute; inset:0; display:grid; place-items:center; background: rgba(0,0,0,.8); z-index: var(--z-fixed); }
@@ -98,16 +93,13 @@
       environment-image="neutral"
       poster="/assets/lcse-logo-AR-loader.png"
       exposure="1.0"
-      camera-orbit="180deg 75deg 100%"
+      camera-orbit="0deg 75deg 100%"
       camera-target="auto"
+      orientation="0deg 180deg 0deg"
       xr-environment>
       <!-- Slotted AR button so browsers allow AR -->
       <div slot="ar-button" class="ar-cta"><button class="btn" id="arBtn">👁️ View in AR</button></div>
     </model-viewer>
-
-    <div class="play-cta" id="playCta">
-      <button class="play-button" id="playButton" type="button">Tap to Play</button>
-    </div>
 
     <div class="gesture-hint" id="gestureHint">
       <span class="gesture-item"><span class="gesture-emoji">🤏</span>Scale</span>
@@ -122,11 +114,8 @@
       constructor() {
         this.mv = document.getElementById('mv');
         this.loader = document.getElementById('loader');
-        this.playCta = document.getElementById('playCta');
-        this.playButton = document.getElementById('playButton');
         this.gestureHint = document.getElementById('gestureHint');
         this.primaryAnimation = null;
-        this.playButtonTimer = null;
         this.isAnimationPlaying = false;
         this.gestureHintTimer = null;
 
@@ -144,6 +133,7 @@
           this.hideLoader();
           this.prepareMuralAnimation();
           this.showGestureHint();
+          this.playMuralAnimation({ force: true });
           console.log('✅ Primary model loaded');
         });
         
@@ -160,10 +150,6 @@
           }
         });
         
-        if (this.playButton) {
-          this.playButton.addEventListener('click', () => this.playMuralAnimation());
-        }
-
         this.mv.addEventListener('animation-finished', () => this.onAnimationFinished());
       }
       
@@ -178,18 +164,14 @@
         if (!animations.length) {
           console.warn('⚠️ No animations detected on primary model');
           this.primaryAnimation = null;
-          this.hidePlayButton(true);
-          if (this.playCta) {
-            this.playCta.style.display = 'none';
-          }
           return;
         }
 
         this.primaryAnimation = animations[0];
         this.mv.animationName = this.primaryAnimation;
+        this.mv.orientation = '0deg 180deg 0deg';
         this.mv.pause();
         this.mv.currentTime = 0;
-        this.showPlayButton();
       }
 
       async playMuralAnimation({ force = false } = {}) {
@@ -202,7 +184,6 @@
         }
 
         this.isAnimationPlaying = true;
-        this.hidePlayButton();
 
         try {
           this.mv.animationName = this.primaryAnimation;
@@ -211,7 +192,6 @@
         } catch (error) {
           console.error('❌ Unable to play mural animation:', error);
           this.isAnimationPlaying = false;
-          this.showPlayButton();
         }
       }
 
@@ -221,35 +201,6 @@
           this.mv.pause();
           this.mv.currentTime = 0;
         }
-        this.showPlayButton();
-      }
-
-      showPlayButton() {
-        if (!this.playCta) return;
-        clearTimeout(this.playButtonTimer);
-        if (this.playButton) {
-          this.playButton.disabled = false;
-        }
-        this.playCta.style.display = 'flex';
-        this.playButtonTimer = setTimeout(() => {
-          this.playCta.classList.add('visible');
-        }, 150);
-      }
-
-      hidePlayButton(force = false) {
-        if (!this.playCta) return;
-        clearTimeout(this.playButtonTimer);
-        if (this.playButton) {
-          this.playButton.disabled = true;
-        }
-        if (force) {
-          this.playCta.classList.remove('visible');
-          this.playCta.style.display = 'none';
-          return;
-        }
-        requestAnimationFrame(() => {
-          this.playCta.classList.remove('visible');
-        });
       }
 
       showGestureHint() {
