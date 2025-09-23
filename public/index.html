@@ -41,15 +41,8 @@
     /* Model Viewer fills screen under header */
     model-viewer { width: 100%; height: 100%; display: block; background: var(--color-black); --poster-color: transparent; }
 
-    /* Floating size controls */
-    .panel { position: absolute; left: 50%; bottom: 6rem; transform: translateX(-50%); background: rgba(0,0,0,.75); border: 1px solid rgba(255,255,255,.2); backdrop-filter: blur(8px); padding: var(--spacing-lg); border-radius: var(--radius-md); text-align: center; z-index: var(--z-fixed); min-width: 280px; }
-    .panel h3 { margin: 0 0 .5rem; font-size: .95rem; font-weight: 600; }
-    .panel label { display:block; font-size: .85rem; opacity: .85; margin-bottom: .25rem; }
-    input[type="range"] { width: 100%; height: 6px; background: rgba(255,255,255,.2); border-radius: 999px; -webkit-appearance: none; appearance: none; }
-    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; }
-    .buttons { display:flex; gap: .5rem; justify-content:center; margin-top: .5rem; }
     .btn { background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.25); padding: .45rem .7rem; border-radius: 8px; font-size: .8rem; cursor: pointer; }
-    .btn.active { background:#fff; color:#000; }
+    .btn:active { transform: scale(0.97); }
 
     /* AR button (slotted) visual boost */
     .ar-cta { position: absolute; right: var(--spacing-lg); bottom: var(--spacing-lg); z-index: var(--z-fixed); }
@@ -66,25 +59,11 @@
     .loader-inner { text-align:center; padding: 1rem 1.25rem; border: 1px solid rgba(255,255,255,.2); border-radius: 12px; background: rgba(0,0,0,.6); }
     .loader-inner img { width: 64px; height:64px; display:block; margin: 0 auto .75rem; filter: invert(1); }
 
-    /* Multi-model controls */
-    .model-controls { position: absolute; right: var(--spacing-lg); top: 4rem; background: rgba(0,0,0,.8); padding: var(--spacing-md); border-radius: var(--radius-md); z-index: var(--z-fixed); min-width: 200px; }
-    .model-controls h4 { margin: 0 0 .5rem; font-size: .9rem; }
-    .model-list { max-height: 200px; overflow-y: auto; }
-    .model-item { display: flex; align-items: center; gap: .5rem; padding: .25rem 0; }
-    .model-item input[type="checkbox"] { margin: 0; }
-    .model-item label { font-size: .8rem; cursor: pointer; flex: 1; }
-    
-    /* Animation controls */
-    .animation-panel { position: absolute; left: var(--spacing-lg); bottom: 6rem; background: rgba(0,0,0,.8); padding: var(--spacing-md); border-radius: var(--radius-md); z-index: var(--z-fixed); min-width: 220px; }
-    .animation-panel h4 { margin: 0 0 .5rem; font-size: .9rem; }
-    .animation-btn { display: block; width: 100%; margin-bottom: .5rem; }
-    
-    /* Debug info */
-    .debug-info { position: absolute; top: 4rem; left: var(--spacing-lg); background: rgba(0,0,0,.6); padding: var(--spacing-sm); border-radius: var(--radius-md); font-size: .75rem; z-index: var(--z-fixed); opacity: 0.7; }
-    
-    /* Behind wall effect */
-    .behind-wall { transform: translateZ(-2px) scale(0.8); opacity: 0.6; transition: all 0.8s ease-out; }
-    .slide-forward { transform: translateZ(0) scale(1); opacity: 1; }
+    /* Gesture hint */
+    .gesture-hint { position: absolute; bottom: 5.5rem; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1.25rem; border-radius: 999px; background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff; font-size: 0.8rem; letter-spacing: 0.02em; text-transform: uppercase; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; z-index: calc(var(--z-fixed) + 1); }
+    .gesture-hint.visible { opacity: 0.9; }
+    .gesture-item { display: flex; align-items: center; gap: 0.35rem; white-space: nowrap; }
+    .gesture-emoji { font-size: 1.1rem; }
   </style>
 </head>
 <body>
@@ -130,38 +109,10 @@
       <button class="play-button" id="playButton" type="button">Tap to Play</button>
     </div>
 
-    <!-- Multi-model controls -->
-    <div class="model-controls" id="modelControls" style="display:none;">
-      <h4>3D Objects</h4>
-      <div class="model-list" id="modelList"></div>
-    </div>
-    
-    <!-- Animation controls -->
-    <div class="animation-panel" id="animationPanel" style="display:none;">
-      <h4>Scene Animations</h4>
-      <button class="btn animation-btn" id="revealBtn">🎭 Reveal from Behind Wall</button>
-      <button class="btn animation-btn" id="hideBtn">🚪 Hide Behind Wall</button>
-      <button class="btn animation-btn" id="scatterBtn">💥 Scatter Objects</button>
-      <button class="btn animation-btn" id="resetBtn">🔄 Reset Scene</button>
-    </div>
-
-    <!-- Size controls -->
-    <div class="panel" id="panel" style="display:none;">
-      <h3>Adjust Model Size</h3>
-      <label>Scale: <span id="scaleVal">1.0x</span></label>
-      <input type="range" id="scale" min="0.1" max="3.0" step="0.1" value="1.0" />
-      <div class="buttons">
-        <button class="btn" data-scale="0.5">Small</button>
-        <button class="btn active" data-scale="1.0">Normal</button>
-        <button class="btn" data-scale="2.0">Large</button>
-      </div>
-    </div>
-    
-    <!-- Debug info -->
-    <div class="debug-info" id="debugInfo" style="display:none;">
-      <div>Models loaded: <span id="modelCount">1</span></div>
-      <div>Active animations: <span id="animationCount">0</span></div>
-      <div>Motion detected: <span id="motionStatus">No</span></div>
+    <div class="gesture-hint" id="gestureHint">
+      <span class="gesture-item"><span class="gesture-emoji">🤏</span>Scale</span>
+      <span class="gesture-item"><span class="gesture-emoji">☝️</span>Move</span>
+      <span class="gesture-item"><span class="gesture-emoji">🔄</span>Rotate</span>
     </div>
   </div>
 
@@ -171,51 +122,28 @@
       constructor() {
         this.mv = document.getElementById('mv');
         this.loader = document.getElementById('loader');
-        this.panel = document.getElementById('panel');
-        this.modelControls = document.getElementById('modelControls');
-        this.animationPanel = document.getElementById('animationPanel');
-        this.debugInfo = document.getElementById('debugInfo');
         this.playCta = document.getElementById('playCta');
         this.playButton = document.getElementById('playButton');
-        
-        this.scale = document.getElementById('scale');
-        this.scaleVal = document.getElementById('scaleVal');
-        this.buttons = [...document.querySelectorAll('.buttons .btn')];
-        
-        this.loadedModels = [];
-        this.modelViewers = [];
-        this.animationQueue = [];
-        this.motionDetected = false;
-        this.lastCameraUpdate = 0;
+        this.gestureHint = document.getElementById('gestureHint');
         this.primaryAnimation = null;
         this.playButtonTimer = null;
         this.isAnimationPlaying = false;
-        
-        this.models = [
-          { name: 'Street Sign', src: '/assets/models/cleangreenmid-scaled.glb', position: [0, 0, 0], active: true },
-          // Placeholder for graffiti models - you'll add these
-          { name: 'Graffiti Piece 1', src: '/assets/models/graffiti1.glb', position: [-1, 0.5, -0.5], active: false },
-          { name: 'Graffiti Piece 2', src: '/assets/models/graffiti2.glb', position: [1, -0.2, -0.8], active: false },
-          { name: 'Cinderblock', src: '/assets/models/cinderblock.glb', position: [-0.8, -0.5, 0.2], active: false },
-          { name: 'Chainlink Fence', src: '/assets/models/fence.glb', position: [0, 0, -2], active: false }
-        ];
-        
+        this.gestureHintTimer = null;
+
         this.init();
       }
       
       init() {
         console.log('🎯 Initializing Mural AR Experience...');
         this.setupEventListeners();
-        this.createModelControls();
-        this.startMotionDetection();
       }
-      
+
       setupEventListeners() {
         // Main model viewer events
         this.mv.addEventListener('load', () => {
           this.hideLoader();
-          this.showControls();
           this.prepareMuralAnimation();
+          this.showGestureHint();
           console.log('✅ Primary model loaded');
         });
         
@@ -232,19 +160,6 @@
           }
         });
         
-        // Scale controls
-        this.scale.addEventListener('input', (e) => this.applyScale(e.target.value));
-        this.buttons.forEach(b => b.addEventListener('click', () => {
-          this.scale.value = b.dataset.scale;
-          this.applyScale(b.dataset.scale);
-        }));
-        
-        // Animation controls
-        document.getElementById('revealBtn').addEventListener('click', () => this.revealFromWall());
-        document.getElementById('hideBtn').addEventListener('click', () => this.hideInWall());
-        document.getElementById('scatterBtn').addEventListener('click', () => this.scatterObjects());
-        document.getElementById('resetBtn').addEventListener('click', () => this.resetScene());
-
         if (this.playButton) {
           this.playButton.addEventListener('click', () => this.playMuralAnimation());
         }
@@ -256,117 +171,6 @@
         setTimeout(() => {
           this.loader.style.display = 'none';
         }, 1000);
-      }
-      
-      showControls() {
-        this.panel.style.display = 'block';
-        this.modelControls.style.display = 'block';
-        this.animationPanel.style.display = 'block';
-        this.debugInfo.style.display = 'block';
-      }
-      
-      createModelControls() {
-        const modelList = document.getElementById('modelList');
-        this.models.forEach((model, index) => {
-          const item = document.createElement('div');
-          item.className = 'model-item';
-          item.innerHTML = `
-            <input type="checkbox" id="model-${index}" ${model.active ? 'checked' : ''}>
-            <label for="model-${index}">${model.name}</label>
-          `;
-          
-          const checkbox = item.querySelector('input');
-          checkbox.addEventListener('change', (e) => {
-            this.toggleModel(index, e.target.checked);
-          });
-          
-          modelList.appendChild(item);
-        });
-      }
-      
-      toggleModel(index, show) {
-        const model = this.models[index];
-        model.active = show;
-        
-        if (show && !this.modelViewers[index]) {
-          this.loadModel(index);
-        } else if (this.modelViewers[index]) {
-          this.modelViewers[index].style.display = show ? 'block' : 'none';
-        }
-        
-        this.updateDebugInfo();
-      }
-      
-      async loadModel(index) {
-        const model = this.models[index];
-        console.log(`🎨 Loading ${model.name}...`);
-        
-        if (index === 0) return; // Skip primary model (already loaded)
-        
-        // For now, we'll simulate additional models by duplicating the main viewer
-        // In production, you'd create actual separate model-viewer elements
-        const viewer = this.mv.cloneNode(true);
-        viewer.id = `mv-${index}`;
-        viewer.src = model.src;
-        viewer.style.position = 'absolute';
-        viewer.style.transform = `translate3d(${model.position[0] * 50}px, ${model.position[1] * 50}px, ${model.position[2] * 10}px)`;
-        viewer.classList.add('behind-wall');
-        
-        document.querySelector('.app').appendChild(viewer);
-        this.modelViewers[index] = viewer;
-        
-        // Add to loaded models count
-        this.loadedModels.push(model);
-        this.updateDebugInfo();
-      }
-      
-      // Animation methods
-      revealFromWall() {
-        console.log('🎭 Revealing objects from behind wall...');
-        this.modelViewers.forEach((viewer, index) => {
-          if (viewer && viewer.style.display !== 'none') {
-            viewer.classList.remove('behind-wall');
-            viewer.classList.add('slide-forward');
-          }
-        });
-        this.updateAnimationCount(1);
-      }
-      
-      hideInWall() {
-        console.log('🚪 Hiding objects behind wall...');
-        this.modelViewers.forEach((viewer, index) => {
-          if (viewer && viewer.style.display !== 'none') {
-            viewer.classList.remove('slide-forward');
-            viewer.classList.add('behind-wall');
-          }
-        });
-        this.updateAnimationCount(1);
-      }
-      
-      scatterObjects() {
-        console.log('💥 Scattering objects...');
-        this.modelViewers.forEach((viewer, index) => {
-          if (viewer && viewer.style.display !== 'none') {
-            const randomX = (Math.random() - 0.5) * 200;
-            const randomY = (Math.random() - 0.5) * 200;
-            viewer.style.transform += ` translate(${randomX}px, ${randomY}px)`;
-            viewer.style.transition = 'transform 1.5s ease-out';
-          }
-        });
-        this.updateAnimationCount(1);
-      }
-      
-      resetScene() {
-        console.log('🔄 Resetting scene...');
-        this.models.forEach((model, index) => {
-          if (this.modelViewers[index]) {
-            const viewer = this.modelViewers[index];
-            viewer.style.transform = `translate3d(${model.position[0] * 50}px, ${model.position[1] * 50}px, ${model.position[2] * 10}px)`;
-            viewer.classList.remove('slide-forward', 'behind-wall');
-            viewer.classList.add('behind-wall');
-          }
-        });
-        this.updateAnimationCount(0);
       }
 
       prepareMuralAnimation() {
@@ -444,96 +248,17 @@
         });
       }
 
+      showGestureHint() {
+        if (!this.gestureHint) return;
+        clearTimeout(this.gestureHintTimer);
+        this.gestureHint.classList.add('visible');
+        this.gestureHintTimer = setTimeout(() => {
+          this.gestureHint.classList.remove('visible');
+        }, 6000);
+      }
+
       onARStart() {
-        // Trigger initial "behind wall" setup when AR starts
-        setTimeout(() => {
-          this.hideInWall();
-        }, 1000);
-        
-        // Start motion-triggered reveals
-        this.startARMotionDetection();
-      }
-      
-      startMotionDetection() {
-        // Basic motion detection using device orientation
-        if (window.DeviceOrientationEvent) {
-          window.addEventListener('deviceorientation', (e) => {
-            this.handleMotion(e.gamma, e.beta, e.alpha);
-          });
-        }
-      }
-      
-      startARMotionDetection() {
-        // Enhanced motion detection for AR mode
-        let motionThreshold = 10;
-        let lastOrientation = { x: 0, y: 0, z: 0 };
-        
-        window.addEventListener('deviceorientation', (e) => {
-          const movement = Math.abs(e.gamma - lastOrientation.x) + 
-                         Math.abs(e.beta - lastOrientation.y);
-          
-          if (movement > motionThreshold) {
-            this.triggerMotionAnimation();
-            document.getElementById('motionStatus').textContent = 'Yes';
-          } else {
-            document.getElementById('motionStatus').textContent = 'No';
-          }
-          
-          lastOrientation = { x: e.gamma, y: e.beta, z: e.alpha };
-        });
-      }
-      
-      handleMotion(x, y, z) {
-        // Basic motion handling for preview mode
-        const movement = Math.abs(x) + Math.abs(y);
-        if (movement > 15) {
-          this.motionDetected = true;
-          document.getElementById('motionStatus').textContent = 'Yes';
-        } else {
-          this.motionDetected = false;
-          document.getElementById('motionStatus').textContent = 'No';
-        }
-      }
-      
-      triggerMotionAnimation() {
-        // Randomly trigger reveal animations based on motion
-        if (Math.random() > 0.8) { // 20% chance per motion event
-          this.revealFromWall();
-        }
-      }
-      
-      applyScale(s) {
-        this.mv.scale = `${s} ${s} ${s}`;
-        this.scaleVal.textContent = `${Number(s).toFixed(1)}x`;
-        this.buttons.forEach(b => b.classList.toggle('active', b.dataset.scale === String(s)));
-        
-        // Apply scale to additional models
-        this.modelViewers.forEach(viewer => {
-          if (viewer) viewer.scale = `${s} ${s} ${s}`;
-        });
-      }
-      
-      updateDebugInfo() {
-        document.getElementById('modelCount').textContent = this.loadedModels.length + 1;
-      }
-      
-      updateAnimationCount(count) {
-        document.getElementById('animationCount').textContent = count;
-        setTimeout(() => {
-          document.getElementById('animationCount').textContent = '0';
-        }, 3000);
-      }
-      
-      // Public methods for adding models
-      addGraffitiModel(name, src, position = [0, 0, -1]) {
-        this.models.push({
-          name: name,
-          src: src,
-          position: position,
-          active: false
-        });
-        this.createModelControls(); // Refresh controls
-        console.log(`🎨 Added ${name} to model library`);
+        this.showGestureHint();
       }
     }
     
@@ -542,13 +267,6 @@
       window.muralAR = new MuralARExperience();
       console.log('🎯 Mural AR Experience initialized');
     });
-    
-    // Helper function for adding models dynamically
-    window.addGraffitiPiece = (name, modelPath, x = 0, y = 0, z = -1) => {
-      if (window.muralAR) {
-        window.muralAR.addGraffitiModel(name, modelPath, [x, y, z]);
-      }
-    };
   </script>
 </body>
 </html>
