@@ -98,7 +98,7 @@
       environment-image="neutral"
       poster="/assets/lcse-logo-AR-loader.png"
       exposure="1.0"
-      camera-orbit="0deg 75deg 100%"
+      camera-orbit="180deg 75deg 100%"
       camera-target="auto"
       xr-environment>
       <!-- Slotted AR button so browsers allow AR -->
@@ -192,8 +192,12 @@
         this.showPlayButton();
       }
 
-      async playMuralAnimation() {
-        if (!this.primaryAnimation || this.isAnimationPlaying) {
+      async playMuralAnimation({ force = false } = {}) {
+        if (!this.primaryAnimation) {
+          return;
+        }
+
+        if (this.isAnimationPlaying && !force) {
           return;
         }
 
@@ -259,6 +263,7 @@
 
       onARStart() {
         this.showGestureHint();
+        this.playMuralAnimation({ force: true });
       }
     }
     
