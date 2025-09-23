@@ -164,6 +164,8 @@
         }
 
         this.primaryAnimation = animations[0];
+        this.mv.setAttribute('animation-name', this.primaryAnimation);
+        this.mv.setAttribute('autoplay', '');
         this.mv.animationName = this.primaryAnimation;
         this.mv.pause();
         this.mv.currentTime = 0;
@@ -181,9 +183,10 @@
         this.isAnimationPlaying = true;
 
         try {
+          this.mv.setAttribute('animation-name', this.primaryAnimation);
           this.mv.animationName = this.primaryAnimation;
           this.mv.currentTime = 0;
-          await this.mv.play({ repetitions: 1, animationName: this.primaryAnimation });
+          await this.mv.play({ repetitions: Infinity, animationName: this.primaryAnimation });
         } catch (error) {
           console.error('❌ Unable to play mural animation:', error);
           this.isAnimationPlaying = false;
