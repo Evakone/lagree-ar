@@ -59,6 +59,11 @@
     .gesture-hint.visible { opacity: 0.9; }
     .gesture-item { display: flex; align-items: center; gap: 0.35rem; white-space: nowrap; }
     .gesture-emoji { font-size: 1.1rem; }
+
+    /* Animation control */
+    .animation-control { position: absolute; bottom: 8rem; left: 50%; transform: translateX(-50%); z-index: calc(var(--z-fixed) + 1); }
+    .animation-control .btn { background: #fff; color: #000; border: none; box-shadow: 0 8px 20px rgba(0,0,0,.35); font-weight: 600; }
+    .animation-control .btn:active { transform: scale(0.95); }
   </style>
 </head>
 <body>
@@ -102,6 +107,11 @@
       <span class="gesture-item"><span class="gesture-emoji">☝️</span>Move</span>
       <span class="gesture-item"><span class="gesture-emoji">🔄</span>Rotate</span>
     </div>
+
+    <!-- Animation control for AR mode -->
+    <div class="animation-control" id="animationControl" style="display: none;">
+      <button class="btn" id="playAnimationBtn">▶️ Play Animation</button>
+    </div>
   </div>
 
   <script>
@@ -111,9 +121,13 @@
         this.mv = document.getElementById('mv');
         this.loader = document.getElementById('loader');
         this.gestureHint = document.getElementById('gestureHint');
+        this.animationControl = document.getElementById('animationControl');
+        this.playAnimationBtn = document.getElementById('playAnimationBtn');
         this.primaryAnimation = null;
         this.isAnimationPlaying = false;
         this.gestureHintTimer = null;
+        this.isInARMode = false;
+        this.animationStartedByUser = false;
 
         this.init();
       }
@@ -149,17 +163,28 @@
         
         // AR mode events
         this.mv.addEventListener('before-enter-ar', () => {
-          this.playMuralAnimation({ force: true, resetTime: true });
+          this.isInARMode = true;
+          this.animationStartedByUser = false;
+          // Don't auto-play in AR mode on iOS - show control instead
+          this.showAnimationControl();
         });
 
         this.mv.addEventListener('ar-status', (e) => {
           if (e.detail.status === 'session-started') {
             console.log('🚀 AR session started');
             this.onARStart();
+          } else if (e.detail.status === 'session-ended') {
+            this.isInARMode = false;
+            this.hideAnimationControl();
           }
         });
         
         this.mv.addEventListener('animation-finished', () => this.onAnimationFinished());
+
+        // Animation control button
+        this.playAnimationBtn.addEventListener('click', () => {
+          this.startAnimationWithUserInteraction();
+        });
       }
       
       hideLoader() {
@@ -194,24 +219,46 @@
 
       startPrimaryAnimation({ resetTime = false, force = false } = {}) {
         if (!this.primaryAnimation) {
+          console.warn('⚠️ No primary animation available');
           return;
         }
 
-        this.mv.setAttribute('animation-name', this.primaryAnimation);
-        this.mv.setAttribute('animation-loop', '');
-        this.mv.setAttribute('autoplay', '');
-        this.mv.animationName = this.primaryAnimation;
+        try {
+          // Set animation properties
+          this.mv.setAttribute('animation-name', this.primaryAnimation);
+          this.mv.setAttribute('animation-loop', '');
+          this.mv.setAttribute('autoplay', '');
+          this.mv.animationName = this.primaryAnimation;
 
-        if (resetTime) {
-          this.mv.currentTime = 0;
-        }
+          if (resetTime) {
+            this.mv.currentTime = 0;
+          }
 
-        const playPromise = this.mv.play({ animationName: this.primaryAnimation });
-        this.isAnimationPlaying = true;
-        playPromise.catch((error) => {
-          console.error('❌ Unable to play mural animation:', error);
+          // For iOS, we need to ensure the animation starts properly
+          const playPromise = this.mv.play({ animationName: this.primaryAnimation });
+          this.isAnimationPlaying = true;
+          
+          playPromise.then(() => {
+            console.log('✅ Animation started successfully');
+            this.isAnimationPlaying = true;
+          }).catch((error) => {
+            console.error('❌ Unable to play mural animation:', error);
+            this.isAnimationPlaying = false;
+            
+            // On iOS, try alternative approach
+            if (this.isIOS()) {
+              console.log('🔄 Trying alternative animation start for iOS...');
+              setTimeout(() => {
+                this.mv.play({ animationName: this.primaryAnimation }).catch(e => {
+                  console.error('❌ Alternative animation start also failed:', e);
+                });
+              }, 100);
+            }
+          });
+        } catch (error) {
+          console.error('❌ Error setting up animation:', error);
           this.isAnimationPlaying = false;
-        });
+        }
       }
 
       showGestureHint() {
@@ -225,7 +272,39 @@
 
       onARStart() {
         this.showGestureHint();
+        // Only auto-play if not on iOS or if user has already interacted
+        if (!this.isIOS() || this.animationStartedByUser) {
+          this.playMuralAnimation({ force: true, resetTime: true });
+        }
+      }
+
+      isIOS() {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      }
+
+      showAnimationControl() {
+        if (this.animationControl && this.isIOS()) {
+          this.animationControl.style.display = 'block';
+          // Auto-hide after 10 seconds if not clicked
+          setTimeout(() => {
+            if (!this.animationStartedByUser) {
+              this.animationControl.style.display = 'none';
+            }
+          }, 10000);
+        }
+      }
+
+      hideAnimationControl() {
+        if (this.animationControl) {
+          this.animationControl.style.display = 'none';
+        }
+      }
+
+      startAnimationWithUserInteraction() {
+        this.animationStartedByUser = true;
+        this.hideAnimationControl();
         this.playMuralAnimation({ force: true, resetTime: true });
+        console.log('🎬 Animation started by user interaction');
       }
     }
     
