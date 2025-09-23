@@ -95,7 +95,7 @@
       exposure="1.0"
       camera-orbit="0deg 75deg 100%"
       camera-target="auto"
-      orientation="0deg 180deg 0deg"
+      orientation="0deg 180deg 180deg"
       xr-environment>
       <!-- Slotted AR button so browsers allow AR -->
       <div slot="ar-button" class="ar-cta"><button class="btn" id="arBtn">👁️ View in AR</button></div>
@@ -169,7 +169,7 @@
 
         this.primaryAnimation = animations[0];
         this.mv.animationName = this.primaryAnimation;
-        this.mv.orientation = '0deg 180deg 0deg';
+        this.mv.orientation = '0deg 180deg 180deg';
         this.mv.pause();
         this.mv.currentTime = 0;
       }
