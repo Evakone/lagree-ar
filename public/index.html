@@ -121,6 +121,7 @@
       init() {
         console.log('🎯 Initializing Mural AR Experience...');
         this.setupEventListeners();
+        this.isAnimationPlaying = false;
       }
 
       setupEventListeners() {
@@ -138,7 +139,19 @@
           document.getElementById('loadingText').textContent = 'Error loading model';
         });
         
+        this.mv.addEventListener('play', () => {
+          this.isAnimationPlaying = true;
+        });
+
+        this.mv.addEventListener('pause', () => {
+          this.isAnimationPlaying = false;
+        });
+        
         // AR mode events
+        this.mv.addEventListener('before-enter-ar', () => {
+          this.playMuralAnimation({ force: true, resetTime: true });
+        });
+
         this.mv.addEventListener('ar-status', (e) => {
           if (e.detail.status === 'session-started') {
             console.log('🚀 AR session started');
@@ -164,14 +177,10 @@
         }
 
         this.primaryAnimation = animations[0];
-        this.mv.setAttribute('animation-name', this.primaryAnimation);
-        this.mv.setAttribute('autoplay', '');
-        this.mv.animationName = this.primaryAnimation;
-        this.mv.pause();
-        this.mv.currentTime = 0;
+        this.startPrimaryAnimation({ resetTime: true, force: true });
       }
 
-      async playMuralAnimation({ force = false } = {}) {
+      playMuralAnimation({ force = false, resetTime = false } = {}) {
         if (!this.primaryAnimation) {
           return;
         }
@@ -180,25 +189,29 @@
           return;
         }
 
-        this.isAnimationPlaying = true;
-
-        try {
-          this.mv.setAttribute('animation-name', this.primaryAnimation);
-          this.mv.animationName = this.primaryAnimation;
-          this.mv.currentTime = 0;
-          await this.mv.play({ repetitions: Infinity, animationName: this.primaryAnimation });
-        } catch (error) {
-          console.error('❌ Unable to play mural animation:', error);
-          this.isAnimationPlaying = false;
-        }
+        this.startPrimaryAnimation({ resetTime, force });
       }
 
-      onAnimationFinished() {
-        this.isAnimationPlaying = false;
-        if (this.primaryAnimation) {
-          this.mv.pause();
+      startPrimaryAnimation({ resetTime = false, force = false } = {}) {
+        if (!this.primaryAnimation) {
+          return;
+        }
+
+        this.mv.setAttribute('animation-name', this.primaryAnimation);
+        this.mv.setAttribute('animation-loop', '');
+        this.mv.setAttribute('autoplay', '');
+        this.mv.animationName = this.primaryAnimation;
+
+        if (resetTime) {
           this.mv.currentTime = 0;
         }
+
+        const playPromise = this.mv.play({ animationName: this.primaryAnimation });
+        this.isAnimationPlaying = true;
+        playPromise.catch((error) => {
+          console.error('❌ Unable to play mural animation:', error);
+          this.isAnimationPlaying = false;
+        });
       }
 
       showGestureHint() {
@@ -212,7 +225,7 @@
 
       onARStart() {
         this.showGestureHint();
-        this.playMuralAnimation({ force: true });
+        this.playMuralAnimation({ force: true, resetTime: true });
       }
     }
     
