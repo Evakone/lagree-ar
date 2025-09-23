@@ -64,6 +64,11 @@
     .animation-control { position: absolute; bottom: 8rem; left: 50%; transform: translateX(-50%); z-index: calc(var(--z-fixed) + 1); }
     .animation-control .btn { background: #fff; color: #000; border: none; box-shadow: 0 8px 20px rgba(0,0,0,.35); font-weight: 600; }
     .animation-control .btn:active { transform: scale(0.95); }
+
+    /* Debug controls */
+    .debug-controls { position: absolute; top: 5rem; right: var(--spacing-lg); z-index: calc(var(--z-fixed) + 1); display: flex; flex-direction: column; gap: 0.5rem; }
+    .debug-controls .btn { background: rgba(255,0,0,0.8); color: #fff; border: none; font-size: 0.7rem; padding: 0.3rem 0.5rem; }
+    .debug-controls .btn:active { transform: scale(0.95); }
   </style>
 </head>
 <body>
@@ -89,6 +94,7 @@
     <model-viewer
       id="mv"
       src="/assets/models/LCSE-AR-Back-Wall-Clean-Parented-pipeline.glb"
+      ios-src="/assets/models/LCSE-AR-Back-Wall-Clean-Parented.usdz"
       alt="LCS+E Street Sign - Interactive 3D Model"
       ar
       ar-modes="webxr scene-viewer quick-look"
@@ -116,6 +122,12 @@
     <div class="animation-control" id="animationControl" style="display: none;">
       <button class="btn" id="playAnimationBtn">▶️ Play Animation</button>
     </div>
+
+    <!-- Debug controls -->
+    <div class="debug-controls" id="debugControls" style="display: none;">
+      <button class="btn" id="forceLoadBtn">🔄 Force Load</button>
+      <button class="btn" id="checkReadinessBtn">🔍 Check Readiness</button>
+    </div>
   </div>
 
   <script>
@@ -127,6 +139,9 @@
         this.gestureHint = document.getElementById('gestureHint');
         this.animationControl = document.getElementById('animationControl');
         this.playAnimationBtn = document.getElementById('playAnimationBtn');
+        this.debugControls = document.getElementById('debugControls');
+        this.forceLoadBtn = document.getElementById('forceLoadBtn');
+        this.checkReadinessBtn = document.getElementById('checkReadinessBtn');
         this.primaryAnimation = null;
         this.isAnimationPlaying = false;
         this.gestureHintTimer = null;
@@ -145,18 +160,37 @@
       setupEventListeners() {
         // Main model viewer events
         this.mv.addEventListener('load', () => {
+          console.log('✅ Model load event fired');
           this.hideLoader();
           this.prepareMuralAnimation();
           this.showGestureHint();
           this.playMuralAnimation({ force: true });
-          console.log('✅ Primary model loaded');
           this.logModelInfo();
+        });
+
+        // Add multiple loading completion checks
+        this.mv.addEventListener('model-load', () => {
+          console.log('✅ Model-load event fired');
+          this.onModelFullyLoaded();
+        });
+
+        this.mv.addEventListener('camera-change', () => {
+          console.log('✅ Camera-change event fired - model likely ready');
+          this.onModelFullyLoaded();
         });
         
         this.mv.addEventListener('error', (e) => {
           console.error('❌ Model error:', e);
           console.error('❌ Error details:', e.detail);
-          document.getElementById('loadingText').textContent = 'Error loading model';
+          
+          // Try fallback to non-Draco model
+          if (this.mv.src.includes('pipeline')) {
+            console.log('🔄 Trying fallback to non-Draco model...');
+            this.mv.src = '/assets/models/LCSE-AR-Back-Wall-Clean-Parented-no-draco.glb';
+            document.getElementById('loadingText').textContent = 'Trying alternative model...';
+          } else {
+            document.getElementById('loadingText').textContent = 'Error loading model';
+          }
         });
 
         // Add progress monitoring
@@ -165,8 +199,15 @@
           console.log(`📥 Loading progress: ${Math.round(progress * 100)}%`);
           if (progress < 1) {
             document.getElementById('loadingText').textContent = `Loading 3D models... ${Math.round(progress * 100)}%`;
+          } else {
+            // Progress complete, start readiness checks
+            console.log('📥 Loading progress complete, checking model readiness...');
+            setTimeout(() => this.checkModelReadiness(), 500);
           }
         });
+
+        // Add periodic readiness checks
+        this.startReadinessChecks();
         
         this.mv.addEventListener('play', () => {
           this.isAnimationPlaying = true;
@@ -200,6 +241,21 @@
         this.playAnimationBtn.addEventListener('click', () => {
           this.startAnimationWithUserInteraction();
         });
+
+        // Debug control buttons
+        this.forceLoadBtn.addEventListener('click', () => {
+          console.log('🔄 Force loading model...');
+          this.onModelFullyLoaded();
+        });
+
+        this.checkReadinessBtn.addEventListener('click', () => {
+          this.checkModelReadiness();
+        });
+
+        // Show debug controls in development
+        if (window.location.hostname === 'localhost' || window.location.hostname.includes('vercel')) {
+          this.debugControls.style.display = 'block';
+        }
       }
       
       hideLoader() {
@@ -268,29 +324,47 @@
             }
           }, 5000); // 5 second timeout
 
-          // For iOS, we need to ensure the animation starts properly
-          const playPromise = this.mv.play({ animationName: this.primaryAnimation });
-          this.isAnimationPlaying = true;
-          
-          playPromise.then(() => {
+          const markAnimationStarted = () => {
             console.log('✅ Animation started successfully');
             this.isAnimationPlaying = true;
             clearTimeout(animationTimeout);
             this.monitorPerformance();
-          }).catch((error) => {
+          };
+
+          const handleAnimationError = (error) => {
             console.error('❌ Unable to play mural animation:', error);
             this.isAnimationPlaying = false;
-            
+            clearTimeout(animationTimeout);
+
             // On iOS, try alternative approach
             if (this.isIOS()) {
               console.log('🔄 Trying alternative animation start for iOS...');
               setTimeout(() => {
-                this.mv.play({ animationName: this.primaryAnimation }).catch(e => {
+                try {
+                  const retry = this.mv.play({ animationName: this.primaryAnimation });
+                  if (retry && typeof retry.then === 'function') {
+                    retry.then(markAnimationStarted).catch(e => {
+                      console.error('❌ Alternative animation start also failed:', e);
+                    });
+                  } else {
+                    markAnimationStarted();
+                  }
+                } catch (e) {
                   console.error('❌ Alternative animation start also failed:', e);
-                });
+                }
               }, 100);
             }
-          });
+          };
+
+          // For iOS, we need to ensure the animation starts properly
+          const playResult = this.mv.play({ animationName: this.primaryAnimation });
+
+          if (playResult && typeof playResult.then === 'function') {
+            playResult.then(markAnimationStarted).catch(handleAnimationError);
+          } else {
+            // Older Safari builds return void instead of a promise
+            markAnimationStarted();
+          }
         } catch (error) {
           console.error('❌ Error setting up animation:', error);
           this.isAnimationPlaying = false;
@@ -341,6 +415,57 @@
         this.hideAnimationControl();
         this.playMuralAnimation({ force: true, resetTime: true });
         console.log('🎬 Animation started by user interaction');
+      }
+
+      onModelFullyLoaded() {
+        console.log('🎯 Model fully loaded - attempting animation setup');
+        
+        // Wait a bit for everything to settle
+        setTimeout(() => {
+          this.prepareMuralAnimation();
+          this.playMuralAnimation({ force: true });
+          console.log('✅ Animation setup completed after full load');
+        }, 1000);
+      }
+
+      // Comprehensive loading detection
+      checkModelReadiness() {
+        const checks = {
+          hasModel: !!this.mv.model,
+          hasAnimations: !!(this.mv.availableAnimations && this.mv.availableAnimations.length > 0),
+          isLoaded: this.mv.loaded,
+          hasScene: !!(this.mv.model && this.mv.model.scene),
+          progressComplete: this.mv.loadingProgress === 1.0
+        };
+        
+        console.log('🔍 Model readiness checks:', checks);
+        
+        const allReady = Object.values(checks).every(check => check === true);
+        
+        if (allReady) {
+          console.log('✅ All readiness checks passed - model is fully ready');
+          this.onModelFullyLoaded();
+          return true;
+        }
+        
+        return false;
+      }
+
+      startReadinessChecks() {
+        // Check every 2 seconds if model is ready
+        const checkInterval = setInterval(() => {
+          if (this.checkModelReadiness()) {
+            clearInterval(checkInterval);
+            console.log('✅ Readiness checks stopped - model is ready');
+          }
+        }, 2000);
+
+        // Stop checking after 30 seconds
+        setTimeout(() => {
+          clearInterval(checkInterval);
+          console.log('⏰ Readiness checks timeout - proceeding anyway');
+          this.onModelFullyLoaded();
+        }, 30000);
       }
 
       logModelInfo() {
