@@ -97,7 +97,11 @@
       environment-image="neutral"
       poster="/assets/lcse-logo-AR-loader.png"
       exposure="1.0"
-      xr-environment>
+      xr-environment
+      loading="eager"
+      reveal="auto"
+      disable-zoom
+      interaction-prompt="none">
       <!-- Slotted AR button so browsers allow AR -->
       <div slot="ar-button" class="ar-cta"><button class="btn" id="arBtn">👁️ View in AR</button></div>
     </model-viewer>
@@ -146,6 +150,7 @@
           this.showGestureHint();
           this.playMuralAnimation({ force: true });
           console.log('✅ Primary model loaded');
+          this.logModelInfo();
         });
         
         this.mv.addEventListener('error', (e) => {
@@ -234,6 +239,14 @@
             this.mv.currentTime = 0;
           }
 
+          // Add timeout to prevent hanging
+          const animationTimeout = setTimeout(() => {
+            if (this.isAnimationPlaying) {
+              console.warn('⚠️ Animation may be frozen - attempting recovery');
+              this.recoverFromFreeze();
+            }
+          }, 5000); // 5 second timeout
+
           // For iOS, we need to ensure the animation starts properly
           const playPromise = this.mv.play({ animationName: this.primaryAnimation });
           this.isAnimationPlaying = true;
@@ -241,6 +254,8 @@
           playPromise.then(() => {
             console.log('✅ Animation started successfully');
             this.isAnimationPlaying = true;
+            clearTimeout(animationTimeout);
+            this.monitorPerformance();
           }).catch((error) => {
             console.error('❌ Unable to play mural animation:', error);
             this.isAnimationPlaying = false;
@@ -305,6 +320,76 @@
         this.hideAnimationControl();
         this.playMuralAnimation({ force: true, resetTime: true });
         console.log('🎬 Animation started by user interaction');
+      }
+
+      logModelInfo() {
+        try {
+          const animations = this.mv.availableAnimations || [];
+          console.log('📊 Model Information:');
+          console.log('- Available animations:', animations.length);
+          console.log('- Animations:', animations);
+          console.log('- Model size: ~20MB (large file)');
+          console.log('- Device:', navigator.userAgent);
+          console.log('- Memory:', navigator.deviceMemory ? `${navigator.deviceMemory}GB` : 'Unknown');
+          
+          // Check for performance issues
+          if (this.isIOS()) {
+            console.log('⚠️ iOS detected - large models may cause performance issues');
+            console.log('💡 Consider optimizing model for mobile devices');
+          }
+        } catch (error) {
+          console.error('Error logging model info:', error);
+        }
+      }
+
+      monitorPerformance() {
+        // Monitor frame rate and performance
+        let frameCount = 0;
+        let lastTime = performance.now();
+        
+        const checkPerformance = () => {
+          frameCount++;
+          const currentTime = performance.now();
+          
+          if (currentTime - lastTime >= 1000) {
+            const fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
+            console.log(`📈 Performance: ${fps} FPS`);
+            
+            if (fps < 30) {
+              console.warn('⚠️ Low FPS detected - model may be too complex for device');
+            }
+            
+            frameCount = 0;
+            lastTime = currentTime;
+          }
+          
+          if (this.isAnimationPlaying) {
+            requestAnimationFrame(checkPerformance);
+          }
+        };
+        
+        requestAnimationFrame(checkPerformance);
+      }
+
+      recoverFromFreeze() {
+        console.log('🔄 Attempting to recover from animation freeze...');
+        try {
+          // Stop current animation
+          this.mv.pause();
+          this.isAnimationPlaying = false;
+          
+          // Reset model viewer
+          this.mv.currentTime = 0;
+          
+          // Try to restart after a brief delay
+          setTimeout(() => {
+            console.log('🔄 Restarting animation after recovery...');
+            this.playMuralAnimation({ force: true, resetTime: true });
+          }, 1000);
+          
+        } catch (error) {
+          console.error('❌ Recovery failed:', error);
+        }
       }
     }
     
