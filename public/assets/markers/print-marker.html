@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Marker - LCS+E AR</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .marker-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .marker {
+            width: 10cm;
+            height: 10cm;
+            border: 2px solid #333;
+            position: relative;
+            background: #f8f8f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+        
+        .instructions {
+            max-width: 600px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .instructions h2 {
+            color: #333;
+            margin-top: 0;
+        }
+        
+        .instructions ol {
+            line-height: 1.6;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        .print-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+        
+        .print-btn:hover {
+            background: #0056b3;
+        }
+        
+        .size-info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .instructions, .print-btn {
+                display: none;
+            }
+            
+            .marker-container {
+                box-shadow: none;
+                padding: 0;
+            }
+            
+            .marker {
+                border: 1px solid #000;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="marker-container">
+        <div class="marker">
+            <div>
+                <strong>LCS+E AR Marker</strong><br>
+                <small>10cm × 10cm</small><br><br>
+                <small>Point camera at this marker<br>to see the 3D mural</small>
+            </div>
+        </div>
+    </div>
+    
+    <button class="print-btn" onclick="window.print()">🖨️ Print Marker</button>
+    
+    <div class="instructions">
+        <h2>📋 Printing Instructions</h2>
+        
+        <div class="size-info">
+            <strong>⚠️ Important:</strong> This marker must be printed at exactly <strong>10cm × 10cm</strong> (3.94" × 3.94") for proper AR tracking.
+        </div>
+        
+        <ol>
+            <li><strong>Print Settings:</strong>
+                <ul>
+                    <li>Use a high-quality printer (laser or inkjet)</li>
+                    <li>Print on white paper or cardstock</                    <li>Set print quality to "High" or "Best"</li>
+                    <li>Disable "Fit to page" or "Scale to fit"</li>
+                </ul>
+            </li>
+            
+            <li><strong>Size Verification:</strong>
+                <ul>
+                    <li>Measure the printed marker with a ruler</li>
+                    <li>It should be exactly 10cm × 10cm</li>
+                    <li>If incorrect, adjust your printer settings and reprint</li>
+                </ul>
+            </li>
+            
+            <li><strong>Usage Tips:</strong>
+                <ul>
+                    <li>Place marker on a flat, well-lit surface</li>
+                    <li>Ensure good lighting (avoid shadows)</li>
+                    <li>Keep marker clean and unwrinkled</li>
+                    <li>Hold device steady when scanning</li>
+                </ul>
+            </li>
+            
+            <li><strong>AR Testing:</strong>
+                <ul>
+                    <li>Open the AR app in your browser</li>
+                    <li>Point camera at the printed marker</li>
+                    <li>The 3D mural should appear overlaid on the marker</li>
+                </ul>
+            </li>
+        </ol>
+        
+        <div class="size-info">
+            <strong>💡 Pro Tip:</strong> If the AR model appears too big or too small, use the debug tool at <code>/debug</code> to adjust the scale in real-time!
+        </div>
+    </div>
+    
+    <script>
+        // Add some interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Marker print page loaded');
+            console.log('Marker size: 10cm × 10cm');
+            console.log('Target file: /assets/markers/targets.mind');
+        });
+    </script>
+</body>
+</html>
