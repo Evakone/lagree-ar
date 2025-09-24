@@ -143,9 +143,15 @@ class MINDAR_OT_export_settings(bpy.types.Operator):
         
         export_path = context.scene.mindar_export_path
         if not export_path:
-            export_path = os.path.join(bpy.path.abspath("//"), "mindar_settings.json")
+            # Use a safe default path in the user's Documents folder
+            import bpy
+            user_docs = os.path.expanduser("~/Documents")
+            export_path = os.path.join(user_docs, "mindar_settings.json")
         
         try:
+            # Ensure directory exists
+            os.makedirs(os.path.dirname(export_path), exist_ok=True)
+            
             with open(export_path, 'w') as f:
                 json.dump(settings, f, indent=2)
             self.report({'INFO'}, f"Settings exported to {export_path}")
@@ -162,8 +168,13 @@ class MINDAR_OT_import_settings(bpy.types.Operator):
     
     def execute(self, context):
         import_path = context.scene.mindar_export_path
-        if not import_path or not os.path.exists(import_path):
-            self.report({'ERROR'}, "Invalid import path")
+        if not import_path:
+            # Try default path
+            user_docs = os.path.expanduser("~/Documents")
+            import_path = os.path.join(user_docs, "mindar_settings.json")
+        
+        if not os.path.exists(import_path):
+            self.report({'ERROR'}, f"Settings file not found: {import_path}")
             return {'CANCELLED'}
         
         try:
@@ -226,7 +237,7 @@ def register():
     bpy.types.Scene.mindar_export_path = bpy.props.StringProperty(
         name="Export Path",
         description="Path to export/import settings",
-        default="",
+        default=os.path.expanduser("~/Documents/mindar_settings.json"),
         subtype='FILE_PATH'
     )
 
