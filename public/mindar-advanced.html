@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>LCS+E AR Experience - Advanced MindAR</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/brand.css">
+
+  <style>
+    :root {
+      --overlay-bg: rgba(11, 15, 17, 0.88);
+      --accent: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Zen Kaku Gothic New', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #000;
+      color: #fff;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #ar-container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: var(--overlay-bg);
+      z-index: 20;
+    }
+
+    .overlay.card {
+      flex-direction: column;
+      gap: 16px;
+      max-width: 360px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 28px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 18px 48px rgba(0,0,0,0.6);
+    }
+
+    .overlay.card img {
+      width: 120px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .overlay.card button {
+      background: linear-gradient(135deg,#ffffff 0%, #e6e6e6 100%);
+      color: #0b0f11;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 22px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .overlay.card button:hover,
+    .overlay.card button:focus-visible {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+    }
+
+    .overlay.card .tip {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.75);
+      line-height: 1.5;
+    }
+
+    .hud {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 15;
+      pointer-events: none;
+      font-size: 0.95rem;
+    }
+
+    .hud a {
+      pointer-events: auto;
+      color: rgba(255,255,255,0.85);
+      text-decoration: none;
+      background: rgba(0,0,0,0.45);
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    #status {
+      pointer-events: none;
+      background: rgba(0,0,0,0.5);
+      border-radius: 999px;
+      padding: 8px 16px;
+      margin-left: auto;
+    }
+
+    .instruction {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 16px;
+      padding: 16px 22px;
+      font-size: 0.95rem;
+      text-align: center;
+      z-index: 12;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms ease;
+    }
+
+    .instruction.visible {
+      opacity: 1;
+    }
+
+    .error {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(120,24,24,0.92);
+      z-index: 30;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .error.visible {
+      display: flex;
+    }
+
+    .mode-toggle {
+      position: absolute;
+      top: 5rem;
+      right: 16px;
+      z-index: 15;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .mode-toggle .btn {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: .45rem .7rem;
+      border-radius: 8px;
+      font-size: .8rem;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .mode-toggle .btn.active {
+      background: #fff;
+      color: #000;
+    }
+
+    @media (max-width: 600px) {
+      .overlay.card {
+        width: 100%;
+      }
+    }
+  </style>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="ar-container">
+    <div class="hud">
+      <a href="/index.html">⟵ Web AR</a>
+      <div id="status">Ready</div>
+    </div>
+
+    <div class="mode-toggle">
+      <a href="/index.html" class="btn">Web AR</a>
+      <a href="/mindar.html" class="btn">A-Frame AR</a>
+      <span class="btn active">Advanced AR</span>
+    </div>
+
+    <div class="overlay" id="intro">
+      <div class="overlay card">
+        <img src="/assets/lcse-logo-AR-loader.png" alt="LCS+E marker">
+        <h2 style="margin: 0; font-weight: 600;">Advanced AR Experience</h2>
+        <p class="tip">Grant camera access when prompted, then point your device at the LCS+E marker to see the interactive 3D model.</p>
+        <button id="start">Start AR</button>
+      </div>
+    </div>
+
+    <div id="instruction" class="instruction">Align the camera with the LCS+E marker to place the 3D model.</div>
+    <div id="error" class="error">
+      <div>
+        <h2>Unable to start AR</h2>
+        <p id="error-message">Please ensure camera permissions are granted and try again.</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { MindARThree } from '/js/mindar-image-three.prod.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+    import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+    import { HemisphereLight, Color, AnimationMixer, Clock, sRGBEncoding, Group, Vector3, Quaternion } from 'three';
+
+    const intro = document.getElementById('intro');
+    const statusEl = document.getElementById('status');
+    const instructionEl = document.getElementById('instruction');
+    const errorEl = document.getElementById('error');
+    const errorMessageEl = document.getElementById('error-message');
+    const startButton = document.getElementById('start');
+
+    let mindarThree;
+    let mixer;
+    const smoothingFactorPos = 0.22;
+    const smoothingFactorRot = 0.18;
+    const smoothingFactorScale = 0.22;
+    const targetPosition = new Vector3();
+    const targetQuaternion = new Quaternion();
+    const targetScale = new Vector3(1, 1, 1);
+    const smoothPosition = new Vector3();
+    const smoothQuaternion = new Quaternion();
+    const smoothScale = new Vector3(1, 1, 1);
+    const holdDurationMs = 700;
+    let lastDetectionTime = 0;
+
+    const startAR = async () => {
+      if (mindarThree) return;
+
+      try {
+        statusEl.textContent = 'Initializing…';
+
+        mindarThree = new MindARThree({
+          container: document.querySelector('#ar-container'),
+          imageTargetSrc: '/assets/targets.mind',
+          filterMinCF: 0.0005,
+          filterBeta: 0.02,
+          warmupTolerance: 4,
+          missTolerance: 10,
+          maxTrack: 1,
+        });
+
+        const { renderer, scene, camera } = mindarThree;
+        renderer.outputEncoding = sRGBEncoding;
+        renderer.setClearColor(new Color(0x000000), 0);
+
+        const light = new HemisphereLight(0xffffff, 0x333344, 1.1);
+        light.position.set(0.2, 1.2, 0.5);
+        scene.add(light);
+
+        const anchor = mindarThree.addAnchor(0);
+        const smoothedRoot = new Group();
+        smoothedRoot.visible = false;
+        scene.add(smoothedRoot);
+
+        const gltfLoader = new GLTFLoader();
+        gltfLoader.setMeshoptDecoder(MeshoptDecoder);
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/libs/draco/');
+        gltfLoader.setDRACOLoader(dracoLoader);
+
+        statusEl.textContent = 'Loading model…';
+        const gltf = await gltfLoader.loadAsync('/assets/models/LCSE-AR-Back-Wall-Clean-Parented-pipeline.glb');
+
+        const container = new Group();
+        container.add(gltf.scene);
+
+        // Optimized positioning for our model
+        const orientationOffset = { x: 0, y: 0, z: 0 };
+        container.rotation.set(orientationOffset.x, orientationOffset.y, orientationOffset.z);
+        container.position.set(0, 0, 0);
+        container.scale.set(0.4, 0.4, 0.4);
+
+        smoothedRoot.add(container);
+
+        if (gltf.animations && gltf.animations.length > 0) {
+          mixer = new AnimationMixer(gltf.scene);
+          const clip = gltf.animations[0];
+          const action = mixer.clipAction(clip);
+          action.setLoop(THREE.LoopRepeat);
+          action.play();
+          console.log('✅ Animation started:', clip.name);
+        }
+
+        intro.remove();
+        statusEl.textContent = 'Point at marker';
+        instructionEl.classList.add('visible');
+
+        await mindarThree.start();
+
+        const clock = new Clock();
+
+        anchor.onTargetFound = () => {
+          statusEl.textContent = 'Marker found';
+          instructionEl.classList.remove('visible');
+          smoothedRoot.visible = true;
+          anchor.group.matrixWorld.decompose(targetPosition, targetQuaternion, targetScale);
+          smoothPosition.copy(targetPosition);
+          smoothQuaternion.copy(targetQuaternion);
+          smoothScale.copy(targetScale);
+          lastDetectionTime = performance.now();
+          console.log('🎯 Marker detected');
+        };
+
+        anchor.onTargetLost = () => {
+          statusEl.textContent = 'Point at marker';
+          instructionEl.classList.add('visible');
+          lastDetectionTime = performance.now();
+          console.log('❌ Marker lost');
+        };
+
+        renderer.setAnimationLoop(() => {
+          const delta = clock.getDelta();
+          if (mixer) mixer.update(delta);
+
+          if (anchor.group.visible) {
+            anchor.group.matrixWorld.decompose(targetPosition, targetQuaternion, targetScale);
+            lastDetectionTime = performance.now();
+          }
+
+          smoothPosition.lerp(targetPosition, smoothingFactorPos);
+          smoothQuaternion.slerp(targetQuaternion, smoothingFactorRot);
+          smoothScale.lerp(targetScale, smoothingFactorScale);
+
+          const now = performance.now();
+          if (anchor.group.visible || now - lastDetectionTime < holdDurationMs) {
+            smoothedRoot.visible = true;
+            smoothedRoot.position.copy(smoothPosition);
+            smoothedRoot.quaternion.copy(smoothQuaternion);
+            smoothedRoot.scale.copy(smoothScale);
+          } else {
+            smoothedRoot.visible = false;
+          }
+
+          renderer.render(scene, camera);
+        });
+
+      } catch (err) {
+        console.error('AR Error:', err);
+        statusEl.textContent = 'Error';
+        errorMessageEl.textContent = err.message || 'Unknown error.';
+        errorEl.classList.add('visible');
+      }
+    };
+
+    startButton.addEventListener('click', startAR);
+  </script>
+</body>
+</html>

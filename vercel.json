@@ -2,7 +2,10 @@
     "version": 2,
     "name": "lagree-ar",
     "rewrites": [
-      { "source": "/", "destination": "/index.html" }
+      { "source": "/", "destination": "/landing.html" },
+      { "source": "/web-ar", "destination": "/index.html" },
+      { "source": "/marker-ar", "destination": "/mindar.html" },
+      { "source": "/advanced-ar", "destination": "/mindar-advanced.html" }
     ],
     "headers": [
       {

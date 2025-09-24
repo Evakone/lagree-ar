@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>LCS+E AR Experience - Choose Your Mode</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/brand.css">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Zen Kaku Gothic New', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, var(--color-black) 0%, var(--color-raisin-black) 100%);
+      color: var(--color-white);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: clamp(24px, 4vw, 48px);
+    }
+
+    .hero {
+      max-width: 960px;
+      width: 100%;
+      display: grid;
+      gap: clamp(24px, 4vw, 48px);
+      justify-items: center;
+    }
+
+    .logo {
+      width: clamp(96px, 12vw, 140px);
+      height: clamp(96px, 12vw, 140px);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 6px 20px rgba(2,6,12,0.6);
+      transition: transform var(--transition-base), box-shadow var(--transition-base);
+    }
+
+    .logo img {
+      width: 70%;
+      height: 70%;
+      object-fit: contain;
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 32px rgba(2,6,12,0.75);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.4rem, 6vw, 3.8rem);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--tracking-tight);
+    }
+
+    p.lede {
+      margin: 0;
+      max-width: 640px;
+      font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+      line-height: 1.6;
+      color: var(--color-bright-gray);
+    }
+
+    .ar-modes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      width: 100%;
+      margin-top: 32px;
+    }
+
+    .ar-mode {
+      background: rgba(255,255,255,0.04);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 28px;
+      text-align: left;
+      color: var(--color-chinese-silver);
+      line-height: 1.5;
+      transition: transform var(--transition-base), box-shadow var(--transition-base);
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .ar-mode:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+      border-color: rgba(255,255,255,0.15);
+    }
+
+    .ar-mode h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: var(--color-white);
+      font-size: 1.2rem;
+      font-weight: var(--font-weight-bold);
+    }
+
+    .ar-mode .icon {
+      font-size: 2rem;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .ar-mode .description {
+      margin-bottom: 16px;
+      font-size: 0.95rem;
+    }
+
+    .ar-mode .features {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 0.85rem;
+    }
+
+    .ar-mode .features li {
+      margin-bottom: 6px;
+      padding-left: 16px;
+      position: relative;
+    }
+
+    .ar-mode .features li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--color-white);
+      font-weight: bold;
+    }
+
+    .cta {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+      margin-top: 32px;
+    }
+
+    .cta a {
+      display: inline-block;
+      padding: 14px 28px;
+      border-radius: var(--radius-xl);
+      text-decoration: none;
+      font-weight: var(--font-weight-medium);
+      letter-spacing: 0.01em;
+      transition: transform var(--transition-base), box-shadow var(--transition-base);
+    }
+
+    .cta-primary {
+      background: linear-gradient(135deg,#ffffff 0%, #e6e6e6 100%);
+      color: var(--color-black);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.45);
+    }
+
+    .cta-secondary {
+      background: rgba(255,255,255,0.08);
+      color: var(--color-white);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .cta a:hover,
+    .cta a:focus-visible {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.55);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: var(--font-weight-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .status-working {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .status-experimental {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    @media (max-width: 640px) {
+      .ar-modes {
+        grid-template-columns: 1fr;
+      }
+      
+      .cta {
+        width: 100%;
+      }
+
+      .cta a {
+        width: 100%;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="hero" role="main">
+    <div class="logo">
+      <img src="/assets/lcse-logo-AR-loader.png" alt="LCS+E Logo">
+    </div>
+    <div>
+      <h1>LCS+E AR Experience</h1>
+      <p class="lede">Choose your preferred AR mode to experience the interactive 3D mural. Each mode offers different features and performance characteristics.</p>
+    </div>
+
+    <div class="ar-modes">
+      <a href="/index.html" class="ar-mode">
+        <span class="status-badge status-working">Working</span>
+        <span class="icon">🌐</span>
+        <h3>Web AR (Model Viewer)</h3>
+        <p class="description">Modern web-based AR using Google Model Viewer with USDZ support for iOS.</p>
+        <ul class="features">
+          <li>Works on all modern browsers</li>
+          <li>iOS Quick Look AR support</li>
+          <li>Optimized for mobile performance</li>
+          <li>No marker required</li>
+          <li>Auto-play animations</li>
+        </ul>
+      </a>
+
+      <a href="/mindar.html" class="ar-mode">
+        <span class="status-badge status-experimental">Experimental</span>
+        <span class="icon">🎯</span>
+        <h3>A-Frame AR (MindAR)</h3>
+        <p class="description">Marker-based AR using A-Frame and MindAR for precise tracking.</p>
+        <ul class="features">
+          <li>Marker-based tracking</li>
+          <li>A-Frame 3D framework</li>
+          <li>TensorFlow.js integration</li>
+          <li>Requires printed marker</li>
+          <li>Good for demos</li>
+        </ul>
+      </a>
+
+      <a href="/mindar-advanced.html" class="ar-mode">
+        <span class="status-badge status-working">Advanced</span>
+        <span class="icon">🚀</span>
+        <h3>Advanced AR (Three.js)</h3>
+        <p class="description">Professional-grade marker tracking with smooth animations and advanced features.</p>
+        <ul class="features">
+          <li>Three.js performance</li>
+          <li>Smooth tracking algorithms</li>
+          <li>Professional UI/UX</li>
+          <li>Advanced error handling</li>
+          <li>Production ready</li>
+        </ul>
+      </a>
+    </div>
+
+    <div class="cta">
+      <a class="cta-primary" href="/index.html">🚀 Start with Web AR</a>
+      <a class="cta-secondary" href="/assets/lcse-logo-AR-loader.png" download>🖨️ Download Marker</a>
+    </div>
+  </main>
+</body>
+</html>
