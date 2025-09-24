@@ -214,7 +214,7 @@
         <img src="/assets/lcse-logo-AR-loader.png" alt="LCS+E marker">
         <h2 style="margin: 0; font-weight: 600;">Advanced AR Experience</h2>
         <p class="tip">Grant camera access when prompted, then point your device at the LCS+E marker to see the interactive 3D model.</p>
-        <button id="start">Start AR</button>
+        <button id="start">Enable Camera & Start</button>
       </div>
     </div>
 
@@ -255,11 +255,26 @@
     const holdDurationMs = 700;
     let lastDetectionTime = 0;
 
+    async function ensureCameraPermission() {
+      // Request camera explicitly in a user gesture to guarantee prompt on iOS/Android
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        // Immediately stop tracks; MindAR will open its own stream
+        stream.getTracks().forEach(t => t.stop());
+      } catch (e) {
+        throw new Error('Camera permission denied or unavailable. Please allow camera access in browser settings.');
+      }
+    }
+
     const startAR = async () => {
       if (mindarThree) return;
 
       try {
         statusEl.textContent = 'Initializing…';
+
+        // Proactively request camera access to ensure the permission prompt shows
+        await ensureCameraPermission();
 
         mindarThree = new MindARThree({
           container: document.querySelector('#ar-container'),

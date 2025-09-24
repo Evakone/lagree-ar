@@ -238,6 +238,15 @@
       </div>
     </div>
 
+    <!-- Start/permission overlay -->
+    <div class="loader" id="permissionOverlay" style="display:none; background: rgba(0,0,0,.85);">
+      <div class="loader-inner">
+        <img src="/assets/lcse-logo-AR-loader.png" alt="Camera" />
+        <div style="margin-bottom:.5rem">This experience needs camera access</div>
+        <button id="enableCameraBtn" class="btn" style="background:#fff;color:#000;border:0;cursor:pointer">Enable Camera & Start</button>
+      </div>
+    </div>
+
     <!-- Mode Toggle -->
     <div class="mode-toggle">
       <a href="/index.html" class="btn">Web AR</a>
@@ -286,6 +295,8 @@
       constructor() {
         this.scene = document.getElementById('aframeScene');
         this.loader = document.getElementById('loader');
+        this.permissionOverlay = document.getElementById('permissionOverlay');
+        this.enableCameraBtn = document.getElementById('enableCameraBtn');
         this.gestureHint = document.getElementById('gestureHint');
         this.webModeBtn = document.getElementById('webModeBtn');
         this.mindarModeBtn = document.getElementById('mindarModeBtn');
@@ -301,13 +312,41 @@
         console.log('🎯 Initializing MindAR Experience...');
         this.setupEventListeners();
         this.setupModeToggle();
+        this.showPermissionOverlay();
+      }
+
+      async ensureCameraPermission() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+          stream.getTracks().forEach(t => t.stop());
+        } catch (e) {
+          alert('Camera permission denied or unavailable. Please allow camera access in browser settings and reload.');
+          throw e;
+        }
+      }
+
+      showPermissionOverlay() {
+        this.permissionOverlay.style.display = 'grid';
+        this.enableCameraBtn.addEventListener('click', async () => {
+          try {
+            await this.ensureCameraPermission();
+            this.permissionOverlay.style.display = 'none';
+            // If TF already ready, start immediately; otherwise will start on tfready
+            this.startMindAR();
+          } catch (_) {}
+        });
       }
 
       setupEventListeners() {
         // Wait for TensorFlow to be ready
         window.addEventListener('tfready', () => {
           console.log('TensorFlow.js is ready, MindAR can now start');
-          this.startMindAR();
+          // Start only after user granted camera permission (overlay hides on success)
+          // If overlay is still visible, do nothing; user must tap the button
+          if (this.permissionOverlay.style.display === 'none') {
+            this.startMindAR();
+          }
         });
 
         // A-Frame scene events

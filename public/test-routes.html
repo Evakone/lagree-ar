@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Route Test - LCS+E AR</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-item h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .test-item a {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 5px 5px 5px 0;
+        }
+        .test-item a:hover {
+            background: #0056b3;
+        }
+        .status {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+        .ready { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Route Test - LCS+E AR</h1>
+    <p>Testing all routes and functionality...</p>
+
+    <div class="test-item">
+        <h3>🔗 Direct File Access</h3>
+        <p>Test direct file access (should work locally and on Vercel)</p>
+        <a href="/mindar-debug.html" target="_blank">Direct: mindar-debug.html</a>
+        <a href="/landing.html" target="_blank">Direct: landing.html</a>
+        <a href="/index.html" target="_blank">Direct: index.html</a>
+        <span class="status info">Direct Access</span>
+    </div>
+
+    <div class="test-item">
+        <h3>🛣️ Vercel Routes</h3>
+        <p>Test Vercel routing (should work on production)</p>
+        <a href="/debug" target="_blank">Route: /debug</a>
+        <a href="/" target="_blank">Route: / (landing)</a>
+        <a href="/web-ar" target="_blank">Route: /web-ar</a>
+        <a href="/marker-ar" target="_blank">Route: /marker-ar</a>
+        <a href="/advanced-ar" target="_blank">Route: /advanced-ar</a>
+        <span class="status info">Vercel Routes</span>
+    </div>
+
+    <div class="test-item">
+        <h3>📱 Camera Access Test</h3>
+        <p>Test camera access (requires HTTPS on mobile)</p>
+        <button onclick="testCamera()">Test Camera Access</button>
+        <div id="camera-status"></div>
+        <span class="status info">HTTPS Required</span>
+    </div>
+
+    <div class="test-item">
+        <h3>🎯 Marker File Test</h3>
+        <p>Test if marker file is accessible</p>
+        <button onclick="testMarker()">Test Marker File</button>
+        <div id="marker-status"></div>
+        <span class="status info">File Access</span>
+    </div>
+
+    <div class="test-item">
+        <h3>🔧 Debug Tool Test</h3>
+        <p>Test debug tool functionality</p>
+        <a href="/mindar-debug.html" target="_blank">Open Debug Tool</a>
+        <span class="status ready">Ready</span>
+    </div>
+
+    <script>
+        async function testCamera() {
+            const statusDiv = document.getElementById('camera-status');
+            statusDiv.innerHTML = 'Testing camera access...';
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                statusDiv.innerHTML = '✅ Camera access granted!';
+                stream.getTracks().forEach(track => track.stop());
+            } catch (error) {
+                if (error.name === 'NotAllowedError') {
+                    statusDiv.innerHTML = '❌ Camera access denied by user';
+                } else if (error.name === 'NotSupportedError') {
+                    statusDiv.innerHTML = '❌ Camera not supported or HTTPS required';
+                } else {
+                    statusDiv.innerHTML = `❌ Camera error: ${error.message}`;
+                }
+            }
+        }
+
+        async function testMarker() {
+            const statusDiv = document.getElementById('marker-status');
+            statusDiv.innerHTML = 'Testing marker file...';
+            
+            try {
+                const response = await fetch('/assets/markers/targets.mind');
+                if (response.ok) {
+                    statusDiv.innerHTML = '✅ Marker file accessible!';
+                } else {
+                    statusDiv.innerHTML = `❌ Marker file error: ${response.status}`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `❌ Marker file error: ${error.message}`;
+            }
+        }
+
+        // Test routes on page load
+        async function testRoutes() {
+            console.log('🧪 Testing routes...');
+            
+            const routes = [
+                '/mindar-debug.html',
+                '/landing.html',
+                '/index.html',
+                '/debug',
+                '/web-ar',
+                '/marker-ar',
+                '/advanced-ar'
+            ];
+            
+            for (const route of routes) {
+                try {
+                    const response = await fetch(route, { method: 'HEAD' });
+                    console.log(`${response.ok ? '✅' : '❌'} ${route}: ${response.ok ? 'Working' : 'Failed'}`);
+                } catch (error) {
+                    console.log(`❌ ${route}: Error - ${error.message}`);
+                }
+            }
+        }
+
+        // Run tests when page loads
+        testRoutes();
+    </script>
+</body>
+</html>

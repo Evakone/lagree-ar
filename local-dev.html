@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local AR Development - LCS+E</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            color: #333;
+            margin-top: 0;
+        }
+        .section a {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 5px 5px 5px 0;
+        }
+        .section a:hover {
+            background: #0056b3;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        code {
+            background: #f8f9fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Local AR Development Setup</h1>
+    
+    <div class="section">
+        <h2>🔧 Quick Start (Local Development)</h2>
+        <p>For local development with camera access, you need HTTPS. Here are your options:</p>
+        
+        <div class="warning">
+            <strong>⚠️ Camera Access Issue:</strong> Modern browsers require HTTPS for camera access. 
+            Local HTTP servers won't work for AR testing.
+        </div>
+        
+        <h3>Option 1: Use the HTTPS Server Script</h3>
+        <p>Run this in your terminal:</p>
+        <code>./start-local-server.sh</code>
+        <p>Then open: <code>https://localhost:8000</code></p>
+        
+        <h3>Option 2: Use ngrok (Recommended)</h3>
+        <p>Install ngrok and run:</p>
+        <code>ngrok http 8000</code>
+        <p>Use the HTTPS URL provided by ngrok</p>
+        
+        <h3>Option 3: Use Vercel Dev</h3>
+        <p>Run this in your terminal:</p>
+        <code>vercel dev</code>
+        <p>This will give you a local HTTPS server</p>
+    </div>
+
+    <div class="section">
+        <h2>📱 Test Your AR Pages</h2>
+        <p>Once you have HTTPS running, test these pages:</p>
+        
+        <a href="/mindar-debug.html">🔧 Debug Tool</a>
+        <a href="/landing.html">🏠 Landing Page</a>
+        <a href="/index.html">🌐 Web AR</a>
+        <a href="/mindar.html">🎯 A-Frame AR</a>
+        <a href="/mindar-advanced.html">🚀 Advanced AR</a>
+        <a href="/assets/markers/print-marker.html">🖨️ Print Marker</a>
+    </div>
+
+    <div class="section">
+        <h2>🎯 Debug Tool Usage</h2>
+        <p>The debug tool is the fastest way to scale your model:</p>
+        <ol>
+            <li>Print your marker using the print marker page</li>
+            <li>Open the debug tool on your phone</li>
+            <li>Point camera at the printed marker</li>
+            <li>Adjust sliders until model fits perfectly</li>
+            <li>Copy the generated code</li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>🔍 Troubleshooting</h2>
+        
+        <h3>Camera Not Working?</h3>
+        <ul>
+            <li>Make sure you're using HTTPS (not HTTP)</li>
+            <li>Check browser permissions for camera access</li>
+            <li>Try on a different device/browser</li>
+        </ul>
+        
+        <h3>Marker Not Loading?</h3>
+        <ul>
+            <li>Check if <code>/assets/markers/targets.mind</code> exists</li>
+            <li>Verify the file is not corrupted</li>
+            <li>Try regenerating the marker file</li>
+        </ul>
+        
+        <h3>Model Not Scaling?</h3>
+        <ul>
+            <li>Use the debug tool for real-time adjustment</li>
+            <li>Check the console for errors</li>
+            <li>Verify the model file is loading correctly</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>📞 Need Help?</h2>
+        <p>If you're still having issues:</p>
+        <ul>
+            <li>Check the browser console for errors</li>
+            <li>Try the test routes page: <a href="/test-routes.html">Test Routes</a></li>
+            <li>Use the Blender addon as an alternative</li>
+        </ul>
+    </div>
+
+    <script>
+        // Test if we're running on HTTPS
+        if (location.protocol === 'https:') {
+            document.querySelector('.warning').innerHTML = 
+                '<div class="success"><strong>✅ HTTPS Detected:</strong> Camera access should work!</div>';
+        }
+        
+        // Test camera access
+        async function testCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                console.log('✅ Camera access granted');
+                stream.getTracks().forEach(track => track.stop());
+            } catch (error) {
+                console.log('❌ Camera access failed:', error.message);
+            }
+        }
+        
+        // Test on page load
+        testCamera();
+    </script>
+</body>
+</html>
