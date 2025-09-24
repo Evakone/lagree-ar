@@ -196,6 +196,14 @@ class MINDAR_OT_import_settings(bpy.types.Operator):
 
 # Properties
 def register():
+    # Register classes
+    bpy.utils.register_class(MINDAR_PT_panel)
+    bpy.utils.register_class(MINDAR_OT_create_marker_reference)
+    bpy.utils.register_class(MINDAR_OT_scale_to_marker)
+    bpy.utils.register_class(MINDAR_OT_export_settings)
+    bpy.utils.register_class(MINDAR_OT_import_settings)
+    
+    # Register properties
     bpy.types.Scene.mindar_marker_size = bpy.props.FloatProperty(
         name="Marker Size (cm)",
         description="Size of the printed marker in centimeters",
@@ -242,6 +250,14 @@ def register():
     )
 
 def unregister():
+    # Unregister classes
+    bpy.utils.unregister_class(MINDAR_PT_panel)
+    bpy.utils.unregister_class(MINDAR_OT_create_marker_reference)
+    bpy.utils.unregister_class(MINDAR_OT_scale_to_marker)
+    bpy.utils.unregister_class(MINDAR_OT_export_settings)
+    bpy.utils.unregister_class(MINDAR_OT_import_settings)
+    
+    # Unregister properties
     del bpy.types.Scene.mindar_marker_size
     del bpy.types.Scene.mindar_marker_scale
     del bpy.types.Scene.mindar_model_scale
