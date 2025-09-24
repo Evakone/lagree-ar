@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>MindAR Debug - Model Positioning</title>
+  <link rel="stylesheet" href="/brand.css">
+  <style>
+    .debug-panel {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      z-index: 1000;
+      font-family: monospace;
+      min-width: 300px;
+    }
+    
+    .debug-panel h3 {
+      margin: 0 0 15px 0;
+      color: #00ff00;
+    }
+    
+    .control-group {
+      margin-bottom: 15px;
+    }
+    
+    .control-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 12px;
+      color: #ccc;
+    }
+    
+    .control-group input[type="range"] {
+      width: 100%;
+      margin-bottom: 5px;
+    }
+    
+    .control-group input[type="number"] {
+      width: 60px;
+      margin-left: 10px;
+      background: #333;
+      color: white;
+      border: 1px solid #555;
+      padding: 2px 5px;
+    }
+    
+    .control-group .value {
+      font-size: 11px;
+      color: #00ff00;
+    }
+    
+    .preset-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .preset-buttons button {
+      background: #333;
+      color: white;
+      border: 1px solid #555;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    
+    .preset-buttons button:hover {
+      background: #555;
+    }
+    
+    .export-code {
+      margin-top: 15px;
+      padding: 10px;
+      background: #111;
+      border-radius: 5px;
+      font-size: 10px;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+    
+    .copy-btn {
+      background: #0066cc;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 11px;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="debug-panel">
+    <h3>🎯 MindAR Model Debug</h3>
+    
+    <div class="control-group">
+      <label>Scale (Size)</label>
+      <input type="range" id="scaleX" min="0.1" max="2" step="0.1" value="0.4">
+      <span class="value">X: <span id="scaleXValue">0.4</span></span>
+      <input type="range" id="scaleY" min="0.1" max="2" step="0.1" value="0.4">
+      <span class="value">Y: <span id="scaleYValue">0.4</span></span>
+      <input type="range" id="scaleZ" min="0.1" max="2" step="0.1" value="0.4">
+      <span class="value">Z: <span id="scaleZValue">0.4</span></span>
+    </div>
+    
+    <div class="control-group">
+      <label>Position (X, Y, Z)</label>
+      <input type="range" id="posX" min="-2" max="2" step="0.1" value="0">
+      <span class="value">X: <span id="posXValue">0</span></span>
+      <input type="range" id="posY" min="-2" max="2" step="0.1" value="0">
+      <span class="value">Y: <span id="posYValue">0</span></span>
+      <input type="range" id="posZ" min="-2" max="2" step="0.1" value="0">
+      <span class="value">Z: <span id="posZValue">0</span></span>
+    </div>
+    
+    <div class="control-group">
+      <label>Rotation (X, Y, Z) - Degrees</label>
+      <input type="range" id="rotX" min="-180" max="180" step="5" value="0">
+      <span class="value">X: <span id="rotXValue">0</span>°</span>
+      <input type="range" id="rotY" min="-180" max="180" step="5" value="0">
+      <span class="value">Y: <span id="rotYValue">0</span>°</span>
+      <input type="range" id="rotZ" min="-180" max="180" step="5" value="0">
+      <span class="value">Z: <span id="rotZValue">0</span>°</span>
+    </div>
+    
+    <div class="preset-buttons">
+      <button onclick="resetToDefault()">Reset</button>
+      <button onclick="savePreset()">Save</button>
+      <button onclick="loadPreset()">Load</button>
+    </div>
+    
+    <div class="export-code">
+      <div>Generated Code:</div>
+      <pre id="generatedCode">// Copy this code to your MindAR implementation
+container.scale.set(0.4, 0.4, 0.4);
+container.position.set(0, 0, 0);
+container.rotation.set(0, 0, 0);</pre>
+      <button class="copy-btn" onclick="copyCode()">Copy Code</button>
+    </div>
+  </div>
+
+  <div id="ar-container" style="width: 100vw; height: 100vh;">
+    <div class="hud">
+      <a href="/mindar-advanced.html">⟵ Back to Advanced AR</a>
+      <div id="status">Ready</div>
+    </div>
+    <div id="instruction" class="instruction">Point camera at marker to see model</div>
+  </div>
+
+  <script type="module">
+    import { MindARThree } from '/js/mindar-image-three.prod.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+    import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+    import { HemisphereLight, Color, AnimationMixer, Clock, sRGBEncoding, Group, Vector3, Quaternion } from 'three';
+
+    let mindarThree;
+    let mixer;
+    let container;
+    let smoothedRoot;
+    let anchor;
+
+    // Debug controls
+    const controls = {
+      scale: { x: 0.4, y: 0.4, z: 0.4 },
+      position: { x: 0, y: 0, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 }
+    };
+
+    // Initialize debug controls
+    function initDebugControls() {
+      // Scale controls
+      ['scaleX', 'scaleY', 'scaleZ'].forEach(id => {
+        const slider = document.getElementById(id);
+        const valueSpan = document.getElementById(id + 'Value');
+        const axis = id.replace('scale', '').toLowerCase();
+        
+        slider.addEventListener('input', (e) => {
+          const value = parseFloat(e.target.value);
+          controls.scale[axis] = value;
+          valueSpan.textContent = value.toFixed(1);
+          updateModel();
+        });
+      });
+
+      // Position controls
+      ['posX', 'posY', 'posZ'].forEach(id => {
+        const slider = document.getElementById(id);
+        const valueSpan = document.getElementById(id + 'Value');
+        const axis = id.replace('pos', '').toLowerCase();
+        
+        slider.addEventListener('input', (e) => {
+          const value = parseFloat(e.target.value);
+          controls.position[axis] = value;
+          valueSpan.textContent = value.toFixed(1);
+          updateModel();
+        });
+      });
+
+      // Rotation controls
+      ['rotX', 'rotY', 'rotZ'].forEach(id => {
+        const slider = document.getElementById(id);
+        const valueSpan = document.getElementById(id + 'Value');
+        const axis = id.replace('rot', '').toLowerCase();
+        
+        slider.addEventListener('input', (e) => {
+          const value = parseFloat(e.target.value);
+          controls.rotation[axis] = value;
+          valueSpan.textContent = value;
+          updateModel();
+        });
+      });
+    }
+
+    function updateModel() {
+      if (container) {
+        container.scale.set(controls.scale.x, controls.scale.y, controls.scale.z);
+        container.position.set(controls.position.x, controls.position.y, controls.position.z);
+        container.rotation.set(
+          controls.rotation.x * Math.PI / 180,
+          controls.rotation.y * Math.PI / 180,
+          controls.rotation.z * Math.PI / 180
+        );
+        updateGeneratedCode();
+      }
+    }
+
+    function updateGeneratedCode() {
+      const code = `// Copy this code to your MindAR implementation
+container.scale.set(${controls.scale.x}, ${controls.scale.y}, ${controls.scale.z});
+container.position.set(${controls.position.x}, ${controls.position.y}, ${controls.position.z});
+container.rotation.set(${controls.rotation.x * Math.PI / 180}, ${controls.rotation.y * Math.PI / 180}, ${controls.rotation.z * Math.PI / 180});`;
+      document.getElementById('generatedCode').textContent = code;
+    }
+
+    function resetToDefault() {
+      controls.scale = { x: 0.4, y: 0.4, z: 0.4 };
+      controls.position = { x: 0, y: 0, z: 0 };
+      controls.rotation = { x: 0, y: 0, z: 0 };
+      
+      // Update sliders
+      document.getElementById('scaleX').value = 0.4;
+      document.getElementById('scaleY').value = 0.4;
+      document.getElementById('scaleZ').value = 0.4;
+      document.getElementById('posX').value = 0;
+      document.getElementById('posY').value = 0;
+      document.getElementById('posZ').value = 0;
+      document.getElementById('rotX').value = 0;
+      document.getElementById('rotY').value = 0;
+      document.getElementById('rotZ').value = 0;
+      
+      updateModel();
+    }
+
+    function savePreset() {
+      localStorage.setItem('mindarPreset', JSON.stringify(controls));
+      alert('Preset saved!');
+    }
+
+    function loadPreset() {
+      const saved = localStorage.getItem('mindarPreset');
+      if (saved) {
+        const preset = JSON.parse(saved);
+        Object.assign(controls, preset);
+        resetToDefault(); // This will update the UI
+        alert('Preset loaded!');
+      } else {
+        alert('No preset found!');
+      }
+    }
+
+    function copyCode() {
+      const code = document.getElementById('generatedCode').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        alert('Code copied to clipboard!');
+      });
+    }
+
+    // Make functions global
+    window.resetToDefault = resetToDefault;
+    window.savePreset = savePreset;
+    window.loadPreset = loadPreset;
+    window.copyCode = copyCode;
+
+    const startAR = async () => {
+      try {
+        mindarThree = new MindARThree({
+          container: document.querySelector('#ar-container'),
+          imageTargetSrc: '/assets/targets.mind',
+          filterMinCF: 0.0005,
+          filterBeta: 0.02,
+          warmupTolerance: 4,
+          missTolerance: 10,
+          maxTrack: 1,
+        });
+
+        const { renderer, scene, camera } = mindarThree;
+        renderer.outputEncoding = sRGBEncoding;
+        renderer.setClearColor(new Color(0x000000), 0);
+
+        const light = new HemisphereLight(0xffffff, 0x333344, 1.1);
+        light.position.set(0.2, 1.2, 0.5);
+        scene.add(light);
+
+        anchor = mindarThree.addAnchor(0);
+        smoothedRoot = new Group();
+        smoothedRoot.visible = false;
+        scene.add(smoothedRoot);
+
+        const gltfLoader = new GLTFLoader();
+        gltfLoader.setMeshoptDecoder(MeshoptDecoder);
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/libs/draco/');
+        gltfLoader.setDRACOLoader(dracoLoader);
+
+        const gltf = await gltfLoader.loadAsync('/assets/models/LCSE-AR-Back-Wall-Clean-Parented-pipeline.glb');
+
+        container = new Group();
+        container.add(gltf.scene);
+        smoothedRoot.add(container);
+
+        // Apply initial controls
+        updateModel();
+
+        if (gltf.animations && gltf.animations.length > 0) {
+          mixer = new AnimationMixer(gltf.scene);
+          const clip = gltf.animations[0];
+          const action = mixer.clipAction(clip);
+          action.setLoop(THREE.LoopRepeat);
+          action.play();
+        }
+
+        await mindarThree.start();
+
+        const clock = new Clock();
+
+        anchor.onTargetFound = () => {
+          smoothedRoot.visible = true;
+        };
+
+        anchor.onTargetLost = () => {
+          smoothedRoot.visible = false;
+        };
+
+        renderer.setAnimationLoop(() => {
+          const delta = clock.getDelta();
+          if (mixer) mixer.update(delta);
+        });
+
+        initDebugControls();
+        updateGeneratedCode();
+
+      } catch (error) {
+        console.error('AR initialization failed:', error);
+        document.getElementById('status').textContent = 'AR failed to start';
+      }
+    };
+
+    startAR();
+  </script>
+</body>
+</html>
