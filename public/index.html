@@ -44,9 +44,24 @@
     .btn { background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.25); padding: .45rem .7rem; border-radius: 8px; font-size: .8rem; cursor: pointer; }
     .btn:active { transform: scale(0.97); }
 
-    /* AR button (slotted) visual boost */
-    .ar-cta { position: absolute; right: var(--spacing-lg); bottom: calc(3.5rem + var(--spacing-lg) + env(safe-area-inset-bottom, 0)); z-index: var(--z-fixed); }
-    .ar-cta .btn { background:#fff; color:#000; border:none; box-shadow: 0 8px 20px rgba(0,0,0,.35); }
+    /* AR button (slotted) visual boost - centered and mobile responsive */
+    .ar-cta { 
+      position: absolute; 
+      left: 50%; 
+      transform: translateX(-50%); 
+      bottom: calc(3.5rem + var(--spacing-lg) + env(safe-area-inset-bottom, 0)); 
+      z-index: var(--z-fixed); 
+    }
+    .ar-cta .btn { 
+      background:#fff; 
+      color:#000; 
+      border:none; 
+      box-shadow: 0 8px 20px rgba(0,0,0,.35); 
+      font-weight: 600;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.9rem;
+      min-width: 140px;
+    }
 
 
     /* Loader */
@@ -55,7 +70,7 @@
     .loader-inner img { width: 64px; height:64px; display:block; margin: 0 auto .75rem; filter: invert(1); }
 
     /* Gesture hint */
-    .gesture-hint { position: absolute; bottom: 5.5rem; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1.25rem; border-radius: 999px; background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff; font-size: 0.8rem; letter-spacing: 0.02em; text-transform: uppercase; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; z-index: calc(var(--z-fixed) + 1); }
+    .gesture-hint { position: absolute; bottom: 8rem; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1.25rem; border-radius: 999px; background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff; font-size: 0.8rem; letter-spacing: 0.02em; text-transform: uppercase; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; z-index: calc(var(--z-fixed) + 1); }
     .gesture-hint.visible { opacity: 0.9; }
     .gesture-item { display: flex; align-items: center; gap: 0.35rem; white-space: nowrap; }
     .gesture-emoji { font-size: 1.1rem; }
@@ -65,10 +80,22 @@
     .animation-control .btn { background: #fff; color: #000; border: none; box-shadow: 0 8px 20px rgba(0,0,0,.35); font-weight: 600; }
     .animation-control .btn:active { transform: scale(0.95); }
 
-    /* Debug controls */
-    .debug-controls { position: absolute; top: 5rem; right: var(--spacing-lg); z-index: calc(var(--z-fixed) + 1); display: flex; flex-direction: column; gap: 0.5rem; }
-    .debug-controls .btn { background: rgba(255,0,0,0.8); color: #fff; border: none; font-size: 0.7rem; padding: 0.3rem 0.5rem; }
-    .debug-controls .btn:active { transform: scale(0.95); }
+    /* Mobile responsive improvements */
+    @media (max-width: 768px) {
+      .header { padding: var(--spacing-sm) var(--spacing-md); }
+      .title { font-size: 0.9rem; }
+      .ar-cta .btn { padding: 0.6rem 1.2rem; font-size: 0.85rem; min-width: 120px; }
+      .gesture-hint { bottom: 7rem; font-size: 0.75rem; padding: 0.6rem 1rem; gap: 0.8rem; }
+      .gesture-item { gap: 0.25rem; }
+    }
+
+    @media (max-width: 480px) {
+      .header .right { display: none; }
+      .title { font-size: 0.8rem; }
+      .ar-cta .btn { padding: 0.5rem 1rem; font-size: 0.8rem; min-width: 100px; }
+      .gesture-hint { bottom: 6.5rem; font-size: 0.7rem; padding: 0.5rem 0.8rem; gap: 0.6rem; }
+    }
+
   </style>
 </head>
 <body>
@@ -80,7 +107,8 @@
       </div>
       <h1 class="title">Mural AR Experience</h1>
       <div class="right">
-        <a href="/mindar.html" class="btn" style="text-decoration: none; margin-right: 0.5rem;">A-Frame AR</a>
+        <a href="/plane-ar.html" class="btn" style="text-decoration: none; margin-right: 0.5rem;">Plane AR</a>
+        <a href="/mindar.html" class="btn" style="text-decoration: none; margin-right: 0.5rem;">Marker AR</a>
         <a href="/mindar-advanced.html" class="btn" style="text-decoration: none;">Advanced AR</a>
       </div>
     </header>
@@ -126,11 +154,6 @@
       <button class="btn" id="playAnimationBtn">▶️ Play Animation</button>
     </div>
 
-    <!-- Debug controls -->
-    <div class="debug-controls" id="debugControls" style="display: none;">
-      <button class="btn" id="forceLoadBtn">🔄 Force Load</button>
-      <button class="btn" id="checkReadinessBtn">🔍 Check Readiness</button>
-    </div>
   </div>
 
   <script>
@@ -142,9 +165,6 @@
         this.gestureHint = document.getElementById('gestureHint');
         this.animationControl = document.getElementById('animationControl');
         this.playAnimationBtn = document.getElementById('playAnimationBtn');
-        this.debugControls = document.getElementById('debugControls');
-        this.forceLoadBtn = document.getElementById('forceLoadBtn');
-        this.checkReadinessBtn = document.getElementById('checkReadinessBtn');
         this.primaryAnimation = null;
         this.isAnimationPlaying = false;
         this.gestureHintTimer = null;
@@ -171,46 +191,24 @@
           this.logModelInfo();
         });
 
-        // Add multiple loading completion checks
+        // Model loading events
         this.mv.addEventListener('model-load', () => {
-          console.log('✅ Model-load event fired');
-          this.onModelFullyLoaded();
-        });
-
-        this.mv.addEventListener('camera-change', () => {
-          console.log('✅ Camera-change event fired - model likely ready');
+          console.log('✅ Model loaded');
           this.onModelFullyLoaded();
         });
         
         this.mv.addEventListener('error', (e) => {
           console.error('❌ Model error:', e);
-          console.error('❌ Error details:', e.detail);
-          
-          // Try fallback to non-Draco model
-          if (this.mv.src.includes('pipeline')) {
-            console.log('🔄 Trying fallback to non-Draco model...');
-            this.mv.src = '/assets/models/LCSE-AR-Back-Wall-Clean-Parented-no-draco.glb';
-            document.getElementById('loadingText').textContent = 'Trying alternative model...';
-          } else {
-            document.getElementById('loadingText').textContent = 'Error loading model';
-          }
+          document.getElementById('loadingText').textContent = 'Error loading model';
         });
 
-        // Add progress monitoring
+        // Progress monitoring
         this.mv.addEventListener('progress', (e) => {
           const progress = e.detail.totalProgress;
-          console.log(`📥 Loading progress: ${Math.round(progress * 100)}%`);
           if (progress < 1) {
             document.getElementById('loadingText').textContent = `Loading 3D models... ${Math.round(progress * 100)}%`;
-          } else {
-            // Progress complete, start readiness checks
-            console.log('📥 Loading progress complete, checking model readiness...');
-            setTimeout(() => this.checkModelReadiness(), 500);
           }
         });
-
-        // Add periodic readiness checks
-        this.startReadinessChecks();
         
         this.mv.addEventListener('play', () => {
           this.isAnimationPlaying = true;
@@ -245,20 +243,6 @@
           this.startAnimationWithUserInteraction();
         });
 
-        // Debug control buttons
-        this.forceLoadBtn.addEventListener('click', () => {
-          console.log('🔄 Force loading model...');
-          this.onModelFullyLoaded();
-        });
-
-        this.checkReadinessBtn.addEventListener('click', () => {
-          this.checkModelReadiness();
-        });
-
-        // Show debug controls in development
-        if (window.location.hostname === 'localhost' || window.location.hostname.includes('vercel')) {
-          this.debugControls.style.display = 'block';
-        }
       }
       
       hideLoader() {
@@ -319,53 +303,20 @@
             this.mv.currentTime = 0;
           }
 
-          // Add timeout to prevent hanging
-          const animationTimeout = setTimeout(() => {
-            if (this.isAnimationPlaying) {
-              console.warn('⚠️ Animation may be frozen - attempting recovery');
-              this.recoverFromFreeze();
-            }
-          }, 5000); // 5 second timeout
-
           const markAnimationStarted = () => {
             console.log('✅ Animation started successfully');
             this.isAnimationPlaying = true;
-            clearTimeout(animationTimeout);
-            this.monitorPerformance();
           };
 
-          const handleAnimationError = (error) => {
-            console.error('❌ Unable to play mural animation:', error);
-            this.isAnimationPlaying = false;
-            clearTimeout(animationTimeout);
-
-            // On iOS, try alternative approach
-            if (this.isIOS()) {
-              console.log('🔄 Trying alternative animation start for iOS...');
-              setTimeout(() => {
-                try {
-                  const retry = this.mv.play({ animationName: this.primaryAnimation });
-                  if (retry && typeof retry.then === 'function') {
-                    retry.then(markAnimationStarted).catch(e => {
-                      console.error('❌ Alternative animation start also failed:', e);
-                    });
-                  } else {
-                    markAnimationStarted();
-                  }
-                } catch (e) {
-                  console.error('❌ Alternative animation start also failed:', e);
-                }
-              }, 100);
-            }
-          };
-
-          // For iOS, we need to ensure the animation starts properly
+          // Start animation
           const playResult = this.mv.play({ animationName: this.primaryAnimation });
 
           if (playResult && typeof playResult.then === 'function') {
-            playResult.then(markAnimationStarted).catch(handleAnimationError);
+            playResult.then(markAnimationStarted).catch(error => {
+              console.error('❌ Animation start failed:', error);
+              this.isAnimationPlaying = false;
+            });
           } else {
-            // Older Safari builds return void instead of a promise
             markAnimationStarted();
           }
         } catch (error) {
@@ -421,54 +372,9 @@
       }
 
       onModelFullyLoaded() {
-        console.log('🎯 Model fully loaded - attempting animation setup');
-        
-        // Wait a bit for everything to settle
-        setTimeout(() => {
-          this.prepareMuralAnimation();
-          this.playMuralAnimation({ force: true });
-          console.log('✅ Animation setup completed after full load');
-        }, 1000);
-      }
-
-      // Comprehensive loading detection
-      checkModelReadiness() {
-        const checks = {
-          hasModel: !!this.mv.model,
-          hasAnimations: !!(this.mv.availableAnimations && this.mv.availableAnimations.length > 0),
-          isLoaded: this.mv.loaded,
-          hasScene: !!(this.mv.model && this.mv.model.scene),
-          progressComplete: this.mv.loadingProgress === 1.0
-        };
-        
-        console.log('🔍 Model readiness checks:', checks);
-        
-        const allReady = Object.values(checks).every(check => check === true);
-        
-        if (allReady) {
-          console.log('✅ All readiness checks passed - model is fully ready');
-          this.onModelFullyLoaded();
-          return true;
-        }
-        
-        return false;
-      }
-
-      startReadinessChecks() {
-        // Check every 2 seconds if model is ready
-        const checkInterval = setInterval(() => {
-          if (this.checkModelReadiness()) {
-            clearInterval(checkInterval);
-            console.log('✅ Readiness checks stopped - model is ready');
-          }
-        }, 2000);
-
-        // Stop checking after 30 seconds
-        setTimeout(() => {
-          clearInterval(checkInterval);
-          console.log('⏰ Readiness checks timeout - proceeding anyway');
-          this.onModelFullyLoaded();
-        }, 30000);
+        console.log('🎯 Model fully loaded - setting up animation');
+        this.prepareMuralAnimation();
+        this.playMuralAnimation({ force: true });
       }
 
       logModelInfo() {
@@ -519,55 +425,6 @@
         }
       }
 
-      monitorPerformance() {
-        // Monitor frame rate and performance
-        let frameCount = 0;
-        let lastTime = performance.now();
-        
-        const checkPerformance = () => {
-          frameCount++;
-          const currentTime = performance.now();
-          
-          if (currentTime - lastTime >= 1000) {
-            const fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
-            console.log(`📈 Performance: ${fps} FPS`);
-            
-            if (fps < 30) {
-              console.warn('⚠️ Low FPS detected - model may be too complex for device');
-            }
-            
-            frameCount = 0;
-            lastTime = currentTime;
-          }
-          
-          if (this.isAnimationPlaying) {
-            requestAnimationFrame(checkPerformance);
-          }
-        };
-        
-        requestAnimationFrame(checkPerformance);
-      }
-
-      recoverFromFreeze() {
-        console.log('🔄 Attempting to recover from animation freeze...');
-        try {
-          // Stop current animation
-          this.mv.pause();
-          this.isAnimationPlaying = false;
-          
-          // Reset model viewer
-          this.mv.currentTime = 0;
-          
-          // Try to restart after a brief delay
-          setTimeout(() => {
-            console.log('🔄 Restarting animation after recovery...');
-            this.playMuralAnimation({ force: true, resetTime: true });
-          }, 1000);
-          
-        } catch (error) {
-          console.error('❌ Recovery failed:', error);
-        }
-      }
     }
     
     // Initialize when DOM is ready

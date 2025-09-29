@@ -1,7 +1,7 @@
 {
   "name": "lagree-ar",
   "version": "1.0.0",
-  "description": "An AR mural application built with A-Frame and MindAR for marker-based augmented reality.",
+  "description": "An AR mural application with plane detection and marker-based augmented reality using Model Viewer and A-Frame.",
   "main": "index.js",
   "scripts": {
     "build": "echo 'Static site: no build needed'",
