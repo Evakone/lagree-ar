@@ -1,28 +1,22 @@
 {
-  "name": "lagree-ar",
-  "version": "1.0.0",
-  "description": "An AR mural application with plane detection and marker-based augmented reality using Model Viewer and A-Frame.",
-  "main": "index.js",
-  "scripts": {
-    "build": "echo 'Static site: no build needed'",
-    "vercel-build": "npm run build",
-    "dev": "vercel dev --listen 3000",
-    "start": "npx serve -l 3000 public",
-    "test": "echo \"Error: no test specified\" && exit 0"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "dependencies": {
-    "aframe": "^0.1.3"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Evakone/lagree-ar.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Evakone/lagree-ar/issues"
-  },
-  "homepage": "https://github.com/Evakone/lagree-ar#readme"
+    "name": "lagree-ar-v2",
+    "private": true,
+    "version": "2.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc && vite build",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "mind-ar": "^1.2.5",
+        "three": "^0.152.2",
+        "lil-gui": "^0.19.1"
+    },
+    "devDependencies": {
+        "@types/three": "^0.152.0",
+        "typescript": "^5.2.2",
+        "vite": "^5.0.0",
+        "@vitejs/plugin-basic-ssl": "^1.0.1"
+    }
 }

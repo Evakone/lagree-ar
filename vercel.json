@@ -1,28 +1,45 @@
 {
-    "version": 2,
-    "name": "lagree-ar",
-    "rewrites": [
-      { "source": "/", "destination": "/index.html" },
-      { "source": "/web-ar", "destination": "/index.html" },
-      { "source": "/plane-ar", "destination": "/plane-ar.html" },
-      { "source": "/marker-ar", "destination": "/mindar.html" },
-      { "source": "/advanced-ar", "destination": "/mindar-advanced.html" },
-      { "source": "/debug", "destination": "/mindar-debug.html" }
-    ],
-    "headers": [
-      {
-        "source": "/assets/(.*)\\.glb",
-        "headers": [
-          { "key": "Content-Type", "value": "model/gltf-binary" },
-          { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-        ]
-      },
-      {
-        "source": "/js/(.*)\\.wasm",
-        "headers": [
-          { "key": "Content-Type", "value": "application/wasm" },
-          { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-        ]
-      }
-    ]
-  }
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/plane-ar",
+      "destination": "/plane-ar.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)\\.glb",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "model/gltf-binary"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)\\.usdz",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "model/vnd.usdz+zip"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LCS+E AR Experience - MindAR</title>
+
+  <!-- Brand font - Zen Kaku Gothic New -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+    rel="stylesheet">
+
+  <!-- A-Frame 1.5.0 -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+  <!-- MindAR 1.2.5 -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    :root {
+      --color-black: #000;
+      --color-white: #fff;
+      --spacing-sm: .5rem;
+      --spacing-md: .75rem;
+      --spacing-lg: 1rem;
+      --radius-md: 10px;
+      --z-fixed: 10;
+      --font: 'Zen Kaku Gothic New', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      font-family: var(--font);
+      background: var(--color-black);
+      color: var(--color-white);
+    }
+
+    .app {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: var(--z-fixed);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-lg);
+      padding: var(--spacing-md) var(--spacing-lg);
+      background: rgba(0, 0, 0, .7);
+      backdrop-filter: blur(8px);
+    }
+
+    .header .left,
+    .header .right {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .header .left {
+      left: var(--spacing-lg);
+    }
+
+    .header .right {
+      right: var(--spacing-lg);
+    }
+
+    .brand-dot {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #000;
+      display: grid;
+      place-items: center;
+    }
+
+    .brand-dot img {
+      width: 26px;
+      height: 26px;
+      object-fit: contain;
+      filter: invert(1);
+    }
+
+    .title {
+      margin: 0;
+      font-weight: 600;
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    /* A-Frame scene fills screen under header */
+    a-scene {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: var(--color-black);
+    }
+
+    /* Loader */
+    .loader {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(0, 0, 0, .8);
+      z-index: var(--z-fixed);
+    }
+
+    .loader-inner {
+      text-align: center;
+      padding: 1rem 1.25rem;
+      border: 1px solid rgba(255, 255, 255, .2);
+      border-radius: 12px;
+      background: rgba(0, 0, 0, .6);
+    }
+
+    .loader-inner img {
+      width: 64px;
+      height: 64px;
+      display: block;
+      margin: 0 auto .75rem;
+      filter: invert(1);
+    }
+
+    /* Gesture hint */
+    .gesture-hint {
+      position: absolute;
+      bottom: 5.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      font-size: 0.8rem;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+      z-index: calc(var(--z-fixed) + 1);
+    }
+
+    .gesture-hint.visible {
+      opacity: 0.9;
+    }
+
+    .gesture-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+    }
+
+    .gesture-emoji {
+      font-size: 1.1rem;
+    }
+
+    /* Mode toggle */
+    .mode-toggle {
+      position: absolute;
+      top: 5rem;
+      right: var(--spacing-lg);
+      z-index: calc(var(--z-fixed) + 1);
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      background: rgba(255, 255, 255, .12);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, .25);
+      padding: .45rem .7rem;
+      border-radius: 8px;
+      font-size: .8rem;
+      cursor: pointer;
+    }
+
+    .btn.active {
+      background: #fff;
+      color: #000;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="left">
+        <div class="brand-dot"><img src="/assets/lcse-logo-AR-loader.png" alt="LCS+E"></div>
+      </div>
+      <h1 class="title">Mural AR Experience - MindAR</h1>
+      <div class="right"></div>
+    </header>
+
+    <!-- Loader -->
+    <div class="loader" id="loader">
+      <div class="loader-inner">
+        <img src="/assets/lcse-logo-AR-loader.png" alt="Loading" />
+        <div id="loadingText">Loading AR experience…</div>
+      </div>
+    </div>
+
+    <!-- Start/permission overlay -->
+    <div class="loader" id="permissionOverlay" style="display:none; background: rgba(0,0,0,.85);">
+      <div class="loader-inner">
+        <img src="/assets/lcse-logo-AR-loader.png" alt="Camera" />
+        <div style="margin-bottom:.5rem">This experience needs camera access</div>
+        <button id="enableCameraBtn" class="btn" style="background:#fff;color:#000;border:0;cursor:pointer">Enable
+          Camera & Start</button>
+      </div>
+    </div>
+
+    <!-- Mode Toggle -->
+    <div class="mode-toggle">
+      <a href="/index.html" class="btn">Web AR</a>
+      <span class="btn active">A-Frame AR</span>
+      <a href="/mindar-advanced.html" class="btn">Advanced AR</a>
+    </div>
+
+    <!-- Gesture hint -->
+    <div class="gesture-hint" id="gestureHint">
+      <span class="gesture-item"><span class="gesture-emoji">📱</span>Point camera at marker</span>
+      <span class="gesture-item"><span class="gesture-emoji">🤏</span>Scale</span>
+      <span class="gesture-item"><span class="gesture-emoji">☝️</span>Move</span>
+    </div>
+
+    <!-- A-Frame Scene with MindAR -->
+    <a-scene id="aframeScene" mindar-image="imageTargetSrc: /assets/markers/targets.mind" color-space="sRGB" embedded
+      renderer="antialias: true; precision: medium; colorManagement: true; physicallyCorrectLights: true"
+      vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+
+      <a-assets>
+        <a-asset-item id="muralModel" src="/assets/models/LCSE-AR-Back-Wall-Clean-Parented-pipeline.glb"></a-asset-item>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-entity id="arModel" gltf-model="#muralModel" animation-mixer scale="0.4 0.4 0.4" position="0 0 0">
+        </a-entity>
+      </a-entity>
+    </a-scene>
+  </div>
+
+  <script>
+    // MindAR AR Experience Manager
+    class MindARExperience {
+      constructor() {
+        this.scene = document.getElementById('aframeScene');
+        this.loader = document.getElementById('loader');
+        this.permissionOverlay = document.getElementById('permissionOverlay');
+        this.enableCameraBtn = document.getElementById('enableCameraBtn');
+        this.gestureHint = document.getElementById('gestureHint');
+        this.webModeBtn = document.getElementById('webModeBtn');
+        this.mindarModeBtn = document.getElementById('mindarModeBtn');
+        this.arModel = document.getElementById('arModel');
+        this.isWebMode = true;
+        this.isAnimationPlaying = false;
+        this.gestureHintTimer = null;
+
+        this.init();
+      }
+
+      init() {
+        console.log('🎯 Initializing MindAR Experience...');
+        this.setupEventListeners();
+        this.setupModeToggle();
+        this.showPermissionOverlay();
+      }
+
+      async ensureCameraPermission() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+          stream.getTracks().forEach(t => t.stop());
+        } catch (e) {
+          alert('Camera permission denied or unavailable. Please allow camera access in browser settings and reload.');
+          throw e;
+        }
+      }
+
+      showPermissionOverlay() {
+        this.permissionOverlay.style.display = 'grid';
+        this.enableCameraBtn.addEventListener('click', async () => {
+          try {
+            await this.ensureCameraPermission();
+            this.permissionOverlay.style.display = 'none';
+            // If TF already ready, start immediately; otherwise will start on tfready
+            this.startMindAR();
+          } catch (_) { }
+        });
+      }
+
+      setupEventListeners() {
+        // A-Frame scene events
+        this.scene.addEventListener('loaded', () => {
+          console.log('✅ A-Frame scene loaded');
+          this.hideLoader();
+          this.showGestureHint();
+
+          // If permission already granted (e.g. from previous session or if not needed), start
+          if (this.permissionOverlay.style.display === 'none') {
+            this.startMindAR();
+          }
+        });
+
+        // MindAR events
+        this.scene.addEventListener('mindar-image-target-found', () => {
+          console.log('🎯 Marker found!');
+          this.playAnimation();
+        });
+
+        this.scene.addEventListener('mindar-image-target-lost', () => {
+          console.log('❌ Marker lost');
+          this.pauseAnimation();
+        });
+      }
+
+      setupModeToggle() {
+        this.webModeBtn.addEventListener('click', () => {
+          if (!this.isWebMode) {
+            this.switchToWebMode();
+          }
+        });
+
+        this.mindarModeBtn.addEventListener('click', () => {
+          if (this.isWebMode) {
+            this.switchToMindARMode();
+          }
+        });
+      }
+
+      switchToWebMode() {
+        console.log('🔄 Switching to Web AR mode');
+        this.isWebMode = true;
+        this.webModeBtn.classList.add('active');
+        this.mindarModeBtn.classList.remove('active');
+
+        // Redirect to web version
+        window.location.href = '/index.html';
+      }
+
+      switchToMindARMode() {
+        console.log('🔄 Switching to MindAR mode');
+        this.isWebMode = false;
+        this.mindarModeBtn.classList.add('active');
+        this.webModeBtn.classList.remove('active');
+
+        // Already in MindAR mode
+        this.startMindAR();
+      }
+
+      startMindAR() {
+        console.log('🚀 Starting MindAR...');
+        try {
+          if (this.scene.components && this.scene.components['mindar-image']) {
+            console.log('MindAR component found, starting...');
+            this.scene.components['mindar-image'].start();
+          } else {
+            console.error('MindAR component not found');
+          }
+        } catch (error) {
+          console.error('Error starting MindAR:', error);
+        }
+      }
+
+      playAnimation() {
+        if (this.arModel && this.arModel.components && this.arModel.components['animation-mixer']) {
+          console.log('🎬 Playing animation');
+          this.arModel.components['animation-mixer'].play();
+          this.isAnimationPlaying = true;
+        }
+      }
+
+      pauseAnimation() {
+        if (this.arModel && this.arModel.components && this.arModel.components['animation-mixer']) {
+          console.log('⏸️ Pausing animation');
+          this.arModel.components['animation-mixer'].stop();
+          this.isAnimationPlaying = false;
+        }
+      }
+
+      hideLoader() {
+        setTimeout(() => {
+          this.loader.style.display = 'none';
+        }, 1000);
+      }
+
+      showGestureHint() {
+        if (!this.gestureHint) return;
+        clearTimeout(this.gestureHintTimer);
+        this.gestureHint.classList.add('visible');
+        this.gestureHintTimer = setTimeout(() => {
+          this.gestureHint.classList.remove('visible');
+        }, 6000);
+      }
+    }
+
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      window.mindarAR = new MindARExperience();
+      console.log('🎯 MindAR Experience initialized');
+    });
+  </script>
+</body>
+
+</html>

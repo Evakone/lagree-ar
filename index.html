@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Lagree AR V2</title>
+    <link rel="stylesheet" href="/src/styles/main.css" />
+</head>
+
+<body>
+    <div id="app">
+        <div id="ar-container"></div>
+
+        <div class="hud">
+            <div id="status">Ready</div>
+        </div>
+
+        <div class="overlay" id="intro">
+            <div class="card">
+                <h2>AR Experience V2</h2>
+                <p>Point your camera at the marker to view the 3D model.</p>
+                <button id="start-btn">Start Experience</button>
+            </div>
+        </div>
+
+        <div id="debug-panel"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>

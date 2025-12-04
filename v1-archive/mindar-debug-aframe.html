@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MindAR A-Frame Debugger</title>
+
+  <!-- A-Frame 1.5.0 -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+  <!-- MindAR 1.2.5 -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: monospace;
+      overflow: hidden;
+    }
+
+    .debug-panel {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.85);
+      color: #0f0;
+      padding: 15px;
+      border-radius: 8px;
+      z-index: 1000;
+      width: 280px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border: 1px solid #333;
+    }
+
+    .debug-panel h3 {
+      margin: 0 0 10px 0;
+      color: #fff;
+      font-size: 1.1em;
+      border-bottom: 1px solid #333;
+      padding-bottom: 5px;
+    }
+
+    .control-group {
+      margin-bottom: 12px;
+    }
+
+    .control-group label {
+      display: block;
+      color: #aaa;
+      font-size: 0.8em;
+      margin-bottom: 4px;
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .control-row span {
+      width: 15px;
+      font-weight: bold;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      height: 4px;
+    }
+
+    input[type="number"] {
+      width: 50px;
+      background: #222;
+      border: 1px solid #444;
+      color: #fff;
+      padding: 2px;
+      font-family: monospace;
+    }
+
+    .code-output {
+      background: #111;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 15px;
+      font-size: 0.75em;
+      word-break: break-all;
+      border: 1px solid #333;
+    }
+
+    .btn {
+      background: #333;
+      color: #fff;
+      border: 1px solid #555;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 5px;
+    }
+
+    .btn:hover {
+      background: #444;
+    }
+
+    .btn-primary {
+      background: #0056b3;
+      border-color: #004494;
+    }
+
+    .btn-primary:hover {
+      background: #004494;
+    }
+
+    #ar-container {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="debug-panel">
+    <h3>🛠️ A-Frame Debugger</h3>
+
+    <div class="control-group">
+      <label>POSITION (X, Y, Z)</label>
+      <div class="control-row">
+        <span>X</span>
+        <input type="range" id="posX" min="-2" max="2" step="0.01" value="0">
+        <input type="number" id="numPosX" step="0.01" value="0">
+      </div>
+      <div class="control-row">
+        <span>Y</span>
+        <input type="range" id="posY" min="-2" max="2" step="0.01" value="0">
+        <input type="number" id="numPosY" step="0.01" value="0">
+      </div>
+      <div class="control-row">
+        <span>Z</span>
+        <input type="range" id="posZ" min="-2" max="2" step="0.01" value="0">
+        <input type="number" id="numPosZ" step="0.01" value="0">
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label>ROTATION (Deg)</label>
+      <div class="control-row">
+        <span>X</span>
+        <input type="range" id="rotX" min="-180" max="180" step="1" value="0">
+        <input type="number" id="numRotX" step="1" value="0">
+      </div>
+      <div class="control-row">
+        <span>Y</span>
+        <input type="range" id="rotY" min="-180" max="180" step="1" value="0">
+        <input type="number" id="numRotY" step="1" value="0">
+      </div>
+      <div class="control-row">
+        <span>Z</span>
+        <input type="range" id="rotZ" min="-180" max="180" step="1" value="0">
+        <input type="number" id="numRotZ" step="1" value="0">
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label>SCALE</label>
+      <div class="control-row">
+        <span>S</span>
+        <input type="range" id="scale" min="0.01" max="2" step="0.01" value="0.4">
+        <input type="number" id="numScale" step="0.01" value="0.4">
+      </div>
+    </div>
+
+    <div class="code-output">
+      <div style="margin-bottom:5px; color:#aaa">Generated Attributes:</div>
+      <code id="outputCode">position="0 0 0" rotation="0 0 0" scale="0.4 0.4 0.4"</code>
+    </div>
+    <button class="btn btn-primary" onclick="copyCode()">Copy Attributes</button>
+    <button class="btn" onclick="resetTransform()">Reset</button>
+  </div>
+
+  <a-scene mindar-image="imageTargetSrc: /assets/markers/targets.mind" color-space="sRGB" embedded
+    renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
+
+    <a-assets>
+      <a-asset-item id="muralModel" src="/assets/models/LCSE-AR-Back-Wall-Clean-Parented-pipeline.glb"></a-asset-item>
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <a-entity mindar-image-target="targetIndex: 0">
+      <a-entity id="arModel" gltf-model="#muralModel" position="0 0 0" rotation="0 0 0" scale="0.4 0.4 0.4">
+      </a-entity>
+    </a-entity>
+  </a-scene>
+
+  <script>
+    const model = document.getElementById('arModel');
+    const outputCode = document.getElementById('outputCode');
+
+    const state = {
+      pos: { x: 0, y: 0, z: 0 },
+      rot: { x: 0, y: 0, z: 0 },
+      scale: 0.4
+    };
+
+    function updateModel() {
+      if (!model) return;
+
+      model.setAttribute('position', state.pos);
+      model.setAttribute('rotation', state.rot);
+      model.setAttribute('scale', `${state.scale} ${state.scale} ${state.scale}`);
+
+      const code = `position="${state.pos.x} ${state.pos.y} ${state.pos.z}" \nrotation="${state.rot.x} ${state.rot.y} ${state.rot.z}" \nscale="${state.scale} ${state.scale} ${state.scale}"`;
+      outputCode.innerText = code;
+    }
+
+    function bindInput(type, axis, rangeId, numId) {
+      const range = document.getElementById(rangeId);
+      const num = document.getElementById(numId);
+
+      const update = (val) => {
+        val = parseFloat(val);
+        if (type === 'scale') {
+          state.scale = val;
+        } else {
+          state[type][axis] = val;
+        }
+        range.value = val;
+        num.value = val;
+        updateModel();
+      };
+
+      range.addEventListener('input', e => update(e.target.value));
+      num.addEventListener('input', e => update(e.target.value));
+    }
+
+    // Bind all inputs
+    ['X', 'Y', 'Z'].forEach(axis => {
+      bindInput('pos', axis.toLowerCase(), `pos${axis}`, `numPos${axis}`);
+      bindInput('rot', axis.toLowerCase(), `rot${axis}`, `numRot${axis}`);
+    });
+    bindInput('scale', null, 'scale', 'numScale');
+
+    function copyCode() {
+      navigator.clipboard.writeText(outputCode.innerText);
+      const btn = document.querySelector('.btn-primary');
+      const originalText = btn.innerText;
+      btn.innerText = 'Copied!';
+      setTimeout(() => btn.innerText = originalText, 1500);
+    }
+
+    function resetTransform() {
+      state.pos = { x: 0, y: 0, z: 0 };
+      state.rot = { x: 0, y: 0, z: 0 };
+      state.scale = 0.4;
+
+      // Update UI
+      ['X', 'Y', 'Z'].forEach(axis => {
+        document.getElementById(`pos${axis}`).value = 0;
+        document.getElementById(`numPos${axis}`).value = 0;
+        document.getElementById(`rot${axis}`).value = 0;
+        document.getElementById(`numRot${axis}`).value = 0;
+      });
+      document.getElementById('scale').value = 0.4;
+      document.getElementById('numScale').value = 0.4;
+
+      updateModel();
+    }
+  </script>
+</body>
+
+</html>

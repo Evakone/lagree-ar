@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -8,7 +9,8 @@
   <!-- Brand font - Zen Kaku Gothic New -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+    rel="stylesheet">
 
   <!-- Model Viewer -->
   <script type="module" src="https://unpkg.com/@google/model-viewer@^3.0.0/dist/model-viewer.min.js"></script>
@@ -25,99 +27,115 @@
       --font: 'Zen Kaku Gothic New', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     }
 
-    html, body { 
-      height: 100%; 
-      margin: 0; 
-      font-family: var(--font); 
-      background: var(--color-black); 
-      color: var(--color-white); 
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      font-family: var(--font);
+      background: var(--color-black);
+      color: var(--color-white);
     }
 
-    .app { 
-      position: relative; 
-      width: 100vw; 
-      height: 100vh; 
-      overflow: hidden; 
+    .app {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
     }
 
     /* Header */
-    .header { 
-      position: fixed; 
-      top: 0; 
-      left: 0; 
-      right: 0; 
-      z-index: var(--z-fixed); 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      gap: var(--spacing-lg); 
-      padding: var(--spacing-md) var(--spacing-lg); 
-      background: rgba(0,0,0,.7); 
-      backdrop-filter: blur(8px); 
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: var(--z-fixed);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-lg);
+      padding: var(--spacing-md) var(--spacing-lg);
+      background: rgba(0, 0, 0, .7);
+      backdrop-filter: blur(8px);
     }
-    .header .left, .header .right { 
-      position: absolute; 
-      top: 50%; 
-      transform: translateY(-50%); 
+
+    .header .left,
+    .header .right {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
     }
-    .header .left { left: var(--spacing-lg); }
-    .header .right { right: var(--spacing-lg); }
-    .brand-dot { 
-      width: 40px; 
-      height: 40px; 
-      border-radius: 50%; 
-      background: #000; 
-      display: grid; 
-      place-items: center; 
+
+    .header .left {
+      left: var(--spacing-lg);
     }
-    .brand-dot img { 
-      width: 26px; 
-      height: 26px; 
-      object-fit: contain; 
-      filter: invert(1); 
+
+    .header .right {
+      right: var(--spacing-lg);
     }
-    .title { 
-      margin: 0; 
-      font-weight: 600; 
-      font-size: 1rem; 
-      text-align: center; 
+
+    .brand-dot {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #000;
+      display: grid;
+      place-items: center;
+    }
+
+    .brand-dot img {
+      width: 26px;
+      height: 26px;
+      object-fit: contain;
+      filter: invert(1);
+    }
+
+    .title {
+      margin: 0;
+      font-weight: 600;
+      font-size: 1rem;
+      text-align: center;
     }
 
     /* Model Viewer fills screen under header */
-    model-viewer { 
-      width: 100%; 
-      height: 100%; 
-      display: block; 
-      background: var(--color-black); 
-      --poster-color: transparent; 
+    model-viewer {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: var(--color-black);
+      --poster-color: transparent;
     }
 
-    .btn { 
-      background: rgba(255,255,255,.12); 
-      color: #fff; 
-      border: 1px solid rgba(255,255,255,.25); 
-      padding: .45rem .7rem; 
-      border-radius: 8px; 
-      font-size: .8rem; 
-      cursor: pointer; 
+    .btn {
+      background: rgba(255, 255, 255, .12);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, .25);
+      padding: .45rem .7rem;
+      border-radius: 8px;
+      font-size: .8rem;
+      cursor: pointer;
       text-decoration: none;
       display: inline-block;
     }
-    .btn:active { transform: scale(0.97); }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
 
     /* AR button (slotted) visual boost - centered and mobile responsive */
-    .ar-cta { 
-      position: absolute; 
-      left: 50%; 
-      transform: translateX(-50%); 
-      bottom: calc(3.5rem + var(--spacing-lg) + env(safe-area-inset-bottom, 0)); 
-      z-index: var(--z-fixed); 
+    .ar-cta {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(3.5rem + var(--spacing-lg) + env(safe-area-inset-bottom, 0));
+      z-index: var(--z-fixed);
     }
-    .ar-cta .btn { 
-      background:#fff; 
-      color:#000; 
-      border:none; 
-      box-shadow: 0 8px 20px rgba(0,0,0,.35); 
+
+    .ar-cta .btn {
+      background: #fff;
+      color: #000;
+      border: none;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, .35);
       font-weight: 600;
       padding: 0.75rem 1.5rem;
       font-size: 0.9rem;
@@ -125,78 +143,123 @@
     }
 
     /* Loader */
-    .loader { 
-      position:absolute; 
-      inset:0; 
-      display:grid; 
-      place-items:center; 
-      background: rgba(0,0,0,.8); 
-      z-index: var(--z-fixed); 
+    .loader {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(0, 0, 0, .8);
+      z-index: var(--z-fixed);
     }
-    .loader-inner { 
-      text-align:center; 
-      padding: 1rem 1.25rem; 
-      border: 1px solid rgba(255,255,255,.2); 
-      border-radius: 12px; 
-      background: rgba(0,0,0,.6); 
+
+    .loader-inner {
+      text-align: center;
+      padding: 1rem 1.25rem;
+      border: 1px solid rgba(255, 255, 255, .2);
+      border-radius: 12px;
+      background: rgba(0, 0, 0, .6);
     }
-    .loader-inner img { 
-      width: 64px; 
-      height:64px; 
-      display:block; 
-      margin: 0 auto .75rem; 
-      filter: invert(1); 
+
+    .loader-inner img {
+      width: 64px;
+      height: 64px;
+      display: block;
+      margin: 0 auto .75rem;
+      filter: invert(1);
     }
 
     /* Gesture hint */
-    .gesture-hint { 
-      position: absolute; 
-      bottom: 8rem; 
-      left: 50%; 
-      transform: translateX(-50%); 
-      display: flex; 
-      align-items: center; 
-      gap: 1rem; 
-      padding: 0.75rem 1.25rem; 
-      border-radius: 999px; 
-      background: rgba(0,0,0,0.7); 
-      border: 1px solid rgba(255,255,255,0.2); 
-      backdrop-filter: blur(10px); 
-      color: #fff; 
-      font-size: 0.8rem; 
-      letter-spacing: 0.02em; 
-      text-transform: uppercase; 
-      opacity: 0; 
-      pointer-events: none; 
-      transition: opacity 0.4s ease; 
-      z-index: calc(var(--z-fixed) + 1); 
+    .gesture-hint {
+      position: absolute;
+      bottom: 8rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      font-size: 0.8rem;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+      z-index: calc(var(--z-fixed) + 1);
     }
-    .gesture-hint.visible { opacity: 0.9; }
-    .gesture-item { 
-      display: flex; 
-      align-items: center; 
-      gap: 0.35rem; 
-      white-space: nowrap; 
+
+    .gesture-hint.visible {
+      opacity: 0.9;
     }
-    .gesture-emoji { font-size: 1.1rem; }
+
+    .gesture-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+    }
+
+    .gesture-emoji {
+      font-size: 1.1rem;
+    }
 
     /* Mobile responsive improvements */
     @media (max-width: 768px) {
-      .header { padding: var(--spacing-sm) var(--spacing-md); }
-      .title { font-size: 0.9rem; }
-      .ar-cta .btn { padding: 0.6rem 1.2rem; font-size: 0.85rem; min-width: 120px; }
-      .gesture-hint { bottom: 7rem; font-size: 0.75rem; padding: 0.6rem 1rem; gap: 0.8rem; }
-      .gesture-item { gap: 0.25rem; }
+      .header {
+        padding: var(--spacing-sm) var(--spacing-md);
+      }
+
+      .title {
+        font-size: 0.9rem;
+      }
+
+      .ar-cta .btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.85rem;
+        min-width: 120px;
+      }
+
+      .gesture-hint {
+        bottom: 7rem;
+        font-size: 0.75rem;
+        padding: 0.6rem 1rem;
+        gap: 0.8rem;
+      }
+
+      .gesture-item {
+        gap: 0.25rem;
+      }
     }
 
     @media (max-width: 480px) {
-      .header .right { display: none; }
-      .title { font-size: 0.8rem; }
-      .ar-cta .btn { padding: 0.5rem 1rem; font-size: 0.8rem; min-width: 100px; }
-      .gesture-hint { bottom: 6.5rem; font-size: 0.7rem; padding: 0.5rem 0.8rem; gap: 0.6rem; }
+      .header .right {
+        display: none;
+      }
+
+      .title {
+        font-size: 0.8rem;
+      }
+
+      .ar-cta .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+        min-width: 100px;
+      }
+
+      .gesture-hint {
+        bottom: 6.5rem;
+        font-size: 0.7rem;
+        padding: 0.5rem 0.8rem;
+        gap: 0.6rem;
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="app">
     <!-- Header -->
@@ -220,22 +283,10 @@
     </div>
 
     <!-- Model Viewer with plane detection -->
-    <model-viewer
-      id="mv"
-      src="/assets/models/LCSE-AR-Back-Wall-Clean-Parented-pipeline-Transparent.glb"
-      ios-src="/assets/models/LCSE-AR-Back-Wall-Clean-Parented-Transparent.usdz"
-      alt="LCS+E Street Sign - Interactive 3D Model"
-      ar
-      ar-modes="webxr scene-viewer quick-look"
-      ar-scale="auto"
-      camera-controls
-      environment-image="neutral"
-      poster="/assets/lcse-logo-AR-loader.png"
-      exposure="1.0"
-      xr-environment
-      loading="eager"
-      reveal="auto"
-      disable-zoom
+    <model-viewer id="mv" src="/assets/models/LCSE-AR-Back-Wall-Clean-Parented-pipeline.glb"
+      ios-src="/assets/models/LCSE-AR-Back-Wall-Clean-Parented.usdz" alt="LCS+E Street Sign - Interactive 3D Model" ar
+      ar-modes="webxr scene-viewer quick-look" ar-scale="auto" camera-controls environment-image="neutral"
+      poster="/assets/lcse-logo-AR-loader.png" exposure="1.0" xr-environment loading="eager" reveal="auto" disable-zoom
       interaction-prompt="none">
       <!-- Slotted AR button so browsers allow AR -->
       <div slot="ar-button" class="ar-cta"><button class="btn" id="arBtn">👁️ View in AR</button></div>
@@ -262,7 +313,7 @@
 
         this.init();
       }
-      
+
       init() {
         console.log('🎯 Initializing Plane AR Experience...');
         this.setupEventListeners();
@@ -283,7 +334,7 @@
           console.log('✅ Model loaded');
           this.onModelFullyLoaded();
         });
-        
+
         this.mv.addEventListener('error', (e) => {
           console.error('❌ Model error:', e);
           document.getElementById('loadingText').textContent = 'Error loading model';
@@ -296,7 +347,7 @@
             document.getElementById('loadingText').textContent = `Loading 3D models... ${Math.round(progress * 100)}%`;
           }
         });
-        
+
         this.mv.addEventListener('play', () => {
           this.isAnimationPlaying = true;
         });
@@ -304,7 +355,7 @@
         this.mv.addEventListener('pause', () => {
           this.isAnimationPlaying = false;
         });
-        
+
         // AR mode events
         this.mv.addEventListener('before-enter-ar', () => {
           this.isInARMode = true;
@@ -320,10 +371,10 @@
             console.log('🏁 AR session ended');
           }
         });
-        
+
         this.mv.addEventListener('animation-finished', () => this.onAnimationFinished());
       }
-      
+
       hideLoader() {
         setTimeout(() => {
           this.loader.style.display = 'none';
@@ -372,7 +423,7 @@
           this.mv.setAttribute('animation-name', this.primaryAnimation);
           this.mv.setAttribute('animation-loop', '');
           this.mv.setAttribute('autoplay', '');
-          
+
           // Safely set animation name
           if (this.mv.animationName !== undefined) {
             this.mv.animationName = this.primaryAnimation;
@@ -441,7 +492,7 @@
         }
       }
     }
-    
+
     // Initialize when DOM is ready
     document.addEventListener('DOMContentLoaded', () => {
       window.planeAR = new PlaneARExperience();
@@ -449,4 +500,5 @@
     });
   </script>
 </body>
+
 </html>

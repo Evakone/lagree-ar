@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deployment Test - LCS+E AR</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-item h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .test-item a {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 5px 5px 5px 0;
+        }
+        .test-item a:hover {
+            background: #0056b3;
+        }
+        .status {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+        .ready { background: #d4edda; color: #155724; }
+        .pending { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <h1>🚀 LCS+E AR Deployment Test</h1>
+    <p>Testing all AR pages and functionality...</p>
+
+    <div class="test-item">
+        <h3>🏠 Landing Page</h3>
+        <p>Main entry point with AR mode selection</p>
+        <a href="/landing.html" target="_blank">Test Landing Page</a>
+        <span class="status ready">Ready</span>
+    </div>
+
+    <div class="test-item">
+        <h3>🌐 Web AR (Model Viewer)</h3>
+        <p>USDZ + Model Viewer AR experience</p>
+        <a href="/index.html" target="_blank">Test Web AR</a>
+        <span class="status ready">Ready</span>
+    </div>
+
+    <div class="test-item">
+        <h3>🎯 A-Frame AR (MindAR)</h3>
+        <p>Marker-based AR using A-Frame + MindAR</p>
+        <a href="/mindar.html" target="_blank">Test A-Frame AR</a>
+        <span class="status ready">Ready</span>
+    </div>
+
+    <div class="test-item">
+        <h3>🚀 Advanced AR (Three.js)</h3>
+        <p>Professional Three.js + MindAR implementation</p>
+        <a href="/mindar-advanced.html" target="_blank">Test Advanced AR</a>
+        <span class="status ready">Ready</span>
+    </div>
+
+    <div class="test-item">
+        <h3>🔧 Debug Tool</h3>
+        <p>Real-time marker scaling and positioning tool</p>
+        <a href="/mindar-debug.html" target="_blank">Test Debug Tool</a>
+        <span class="status ready">Ready</span>
+    </div>
+
+    <div class="test-item">
+        <h3>🖨️ Print Marker</h3>
+        <p>Marker printing reference page</p>
+        <a href="/assets/markers/print-marker.html" target="_blank">Test Print Marker</a>
+        <span class="status ready">Ready</span>
+    </div>
+
+    <div class="test-item">
+        <h3>📱 Mobile Test</h3>
+        <p>Test on mobile device with camera access</p>
+        <a href="/debug" target="_blank">Mobile Debug Test</a>
+        <span class="status ready">Ready</span>
+    </div>
+
+    <script>
+        // Test if pages are accessible
+        const testPages = [
+            '/landing.html',
+            '/index.html', 
+            '/mindar.html',
+            '/mindar-advanced.html',
+            '/mindar-debug.html',
+            '/assets/markers/print-marker.html'
+        ];
+
+        async function testPage(url) {
+            try {
+                const response = await fetch(url, { method: 'HEAD' });
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        async function runTests() {
+            console.log('🧪 Running deployment tests...');
+            
+            for (const page of testPages) {
+                const isWorking = await testPage(page);
+                console.log(`${isWorking ? '✅' : '❌'} ${page}: ${isWorking ? 'Working' : 'Failed'}`);
+            }
+            
+            console.log('🎉 Deployment test complete!');
+        }
+
+        // Run tests when page loads
+        runTests();
+    </script>
+</body>
+</html>
